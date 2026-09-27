@@ -6,7 +6,8 @@
     "start": "ng serve --host 0.0.0.0 --proxy-config proxy.conf.json",
     "build": "ng build",
     "test:e2e": "node ../scripts/browser-smoke.mjs",
-    "test:wod": "node ../scripts/wod-browser-smoke.mjs"
+    "test:wod": "node ../scripts/wod-browser-smoke.mjs",
+    "test:progress": "node ../scripts/progress-browser-smoke.mjs"
   },
   "dependencies": {
     "@angular/common": "^21.0.0",

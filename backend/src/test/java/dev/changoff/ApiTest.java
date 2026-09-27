@@ -13,6 +13,41 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureMockMvc
 class ApiTest {
     @Autowired MockMvc mvc; @Autowired ObjectMapper mapper;
+    @Test void optionalRanksPreserveHistoryAndArePrivate() throws Exception {
+        Cookie a=register("progress@example.com"), b=register("progress-other@example.com");
+        mvc.perform(get("/api/me").cookie(a)).andExpect(jsonPath("ranks_enabled").value(true));
+        mvc.perform(put("/api/me").cookie(a).header("X-Requested-With","changoff").contentType("application/json")
+            .content("""
+                {"name":"Alex","bodyweight":75,"standard":"male","ranksEnabled":false}
+                """)).andExpect(status().isOk()).andExpect(jsonPath("ranks_enabled").value(false));
+        for(int reps:new int[]{1,20,1000}) {
+            mvc.perform(post("/api/lifts").cookie(a).header("X-Requested-With","changoff").contentType("application/json")
+                .content("""
+                    {"exercise":"bench-press","weight":75,"reps":%d,"performedOn":"2026-01-01"}
+                    """.formatted(reps))).andExpect(status().isCreated());
+        }
+        mvc.perform(get("/api/dashboard").cookie(a)).andExpect(jsonPath("$[0].rank").value("Silver 1"));
+        mvc.perform(get("/api/lifts").cookie(a)).andExpect(jsonPath("$.length()").value(3));
+        mvc.perform(get("/api/lifts").cookie(b)).andExpect(jsonPath("$.length()").value(0));
+        mvc.perform(get("/api/me").cookie(b)).andExpect(jsonPath("ranks_enabled").value(true));
+        // Older clients omitting the preference must not reset it.
+        mvc.perform(put("/api/me").cookie(a).header("X-Requested-With","changoff").contentType("application/json")
+            .content("""
+                {"name":"Alex","bodyweight":80,"standard":"female"}
+                """)).andExpect(status().isOk()).andExpect(jsonPath("ranks_enabled").value(false));
+        for(int reps:new int[]{0,1001}) {
+            mvc.perform(post("/api/lifts").cookie(a).header("X-Requested-With","changoff").contentType("application/json")
+                .content("""
+                    {"exercise":"bench-press","weight":75,"reps":%d,"performedOn":"2026-01-01"}
+                    """.formatted(reps))).andExpect(status().isBadRequest());
+        }
+        mvc.perform(put("/api/me").cookie(a).header("X-Requested-With","changoff").contentType("application/json")
+            .content("""
+                {"name":"Alex","bodyweight":75,"standard":"male","ranksEnabled":true}
+                """)).andExpect(status().isOk()).andExpect(jsonPath("ranks_enabled").value(true));
+        mvc.perform(get("/api/lifts").cookie(a)).andExpect(jsonPath("$.length()").value(3));
+        mvc.perform(get("/api/dashboard").cookie(a)).andExpect(jsonPath("$[0].rank").value("Silver 1"));
+    }
     Cookie register(String email) throws Exception {
         var response=mvc.perform(post("/api/auth/register").header("X-Requested-With","changoff").contentType("application/json").content("""
             {"name":"Alex","email":"%s","password":"test-password-123","bodyweight":75,"standard":"male"}

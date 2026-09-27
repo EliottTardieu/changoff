@@ -24,8 +24,8 @@ public class Api {
     public Api(JdbcTemplate db,Ranking ranking,@Value("${app.secure-cookie}") boolean secure) {this.db=db;this.ranking=ranking;this.secure=secure;}
     public record Registration(@NotBlank @Size(max=60) String name,@Email @NotBlank @Size(max=254) String email,@NotNull @Size(min=10,max=72) String password,@NotNull @DecimalMin("30") @DecimalMax("300") Double bodyweight,@Pattern(regexp="male|female") @NotNull String standard) {}
     public record Login(@NotBlank @Email String email,@NotNull @Size(max=72) String password) {}
-    public record LiftInput(@NotBlank String exercise,@NotNull @DecimalMin("0") @DecimalMax("1500") Double weight,@Min(1) @Max(12) int reps,@NotNull @PastOrPresent LocalDate performedOn) {}
-    public record Profile(@NotBlank @Size(max=60) String name,@NotNull @DecimalMin("30") @DecimalMax("300") Double bodyweight,@NotNull @Pattern(regexp="male|female") String standard) {}
+    public record LiftInput(@NotBlank String exercise,@NotNull @DecimalMin("0") @DecimalMax("1500") Double weight,@Min(1) @Max(1000) int reps,@NotNull @PastOrPresent LocalDate performedOn) {}
+    public record Profile(@NotBlank @Size(max=60) String name,@NotNull @DecimalMin("30") @DecimalMax("300") Double bodyweight,@NotNull @Pattern(regexp="male|female") String standard,Boolean ranksEnabled) {}
     String email(String e) {return e.trim().toLowerCase(Locale.ROOT);}
     static String hash(String token) {
         try {return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8)));}
@@ -43,7 +43,7 @@ public class Api {
         cookie(res,token,Duration.ofDays(7));
     }
     void cookie(HttpServletResponse res,String token,Duration age) {res.addHeader("Set-Cookie",ResponseCookie.from("changoff_session",token).httpOnly(true).secure(secure).sameSite("Strict").path("/api").maxAge(age).build().toString());}
-    Map<String,Object> profile(UUID id) {return db.queryForMap("SELECT id,name,email,bodyweight,standard FROM athletes WHERE id=?",id);}
+    Map<String,Object> profile(UUID id) {return db.queryForMap("SELECT id,name,email,bodyweight,standard,ranks_enabled FROM athletes WHERE id=?",id);}
     @GetMapping("/health") public Map<String,String> health() {db.queryForObject("SELECT 1",Integer.class);return Map.of("status","UP");}
     @PostMapping("/auth/register") @ResponseStatus(HttpStatus.CREATED)
     public Map<String,Object> register(@Valid @RequestBody Registration in,HttpServletRequest req,HttpServletResponse res) {
@@ -62,7 +62,7 @@ public class Api {
     }
     @PostMapping("/auth/logout") @ResponseStatus(HttpStatus.NO_CONTENT) public void logout(HttpServletRequest req,HttpServletResponse res) {db.update("DELETE FROM sessions WHERE token_hash=?",hash(token(req)));cookie(res,"",Duration.ZERO);}
     @GetMapping("/me") public Map<String,Object> me(HttpServletRequest req) {return profile(user(req));}
-    @PutMapping("/me") public Map<String,Object> update(@Valid @RequestBody Profile in,HttpServletRequest req) {UUID id=user(req);db.update("UPDATE athletes SET name=?,bodyweight=?,standard=? WHERE id=?",in.name().trim(),in.bodyweight(),in.standard(),id);return profile(id);}
+    @PutMapping("/me") public Map<String,Object> update(@Valid @RequestBody Profile in,HttpServletRequest req) {UUID id=user(req);db.update("UPDATE athletes SET name=?,bodyweight=?,standard=?,ranks_enabled=COALESCE(?,ranks_enabled) WHERE id=?",in.name().trim(),in.bodyweight(),in.standard(),in.ranksEnabled(),id);return profile(id);}
     @GetMapping("/exercises") public List<Ranking.Exercise> exercises(HttpServletRequest req) {user(req);return ranking.exercises();}
     @GetMapping("/exercises/{id}/targets") public List<Ranking.Target> targets(@PathVariable String id,@RequestParam(defaultValue="5") int reps,HttpServletRequest req) {
         if(reps<1||reps>12)throw new IllegalArgumentException("Reps must be between 1 and 12.");var p=profile(user(req));return ranking.targets(ranking.exercise(id),(String)p.get("standard"),((Number)p.get("bodyweight")).doubleValue(),reps);
@@ -71,7 +71,7 @@ public class Api {
     @PostMapping("/lifts") @ResponseStatus(HttpStatus.CREATED) public Map<String,Object> log(@Valid @RequestBody LiftInput in,HttpServletRequest req) {
         UUID uid=user(req);var p=profile(uid);var e=ranking.exercise(in.exercise());
         if(!Double.isFinite(in.weight())||(!e.bodyweightMovement()&&in.weight()<=0))throw new IllegalArgumentException("Enter a positive weight; bodyweight movements may use 0.");
-        double bw=((Number)p.get("bodyweight")).doubleValue();String standard=(String)p.get("standard");double score=ranking.score(e,in.weight(),in.reps(),bw);UUID id=UUID.randomUUID();
+        double bw=((Number)p.get("bodyweight")).doubleValue();String standard=(String)p.get("standard");double score=in.reps()<=12?ranking.score(e,in.weight(),in.reps(),bw):0;UUID id=UUID.randomUUID();
         db.update("INSERT INTO lifts(id,user_id,exercise,weight,reps,bodyweight,standard,score,performed_on) VALUES(?,?,?,?,?,?,?,?,?)",id,uid,e.id(),in.weight(),in.reps(),bw,standard,score,in.performedOn());
         return Map.of("id",id,"rank",Ranking.rank(ranking.level(e,standard,score)));
     }
@@ -81,7 +81,7 @@ public class Api {
     @GetMapping("/dashboard") public List<Map<String,Object>> dashboard(HttpServletRequest req) {
         UUID id=user(req);var p=profile(id);String standard=(String)p.get("standard");
         return ranking.exercises().stream().map(e->{
-            Double best=db.queryForObject("SELECT MAX(score) FROM lifts WHERE user_id=? AND exercise=? AND standard=?",Double.class,id,e.id(),standard);
+            Double best=db.queryForObject("SELECT MAX(score) FROM lifts WHERE user_id=? AND exercise=? AND standard=? AND reps<=12",Double.class,id,e.id(),standard);
             double score=best==null?0:best;int level=ranking.level(e,standard,score);
             double low=level==0?0:ranking.threshold(e,standard,level);double high=level==24?low:ranking.threshold(e,standard,level+1);
             Map<String,Object> row=new LinkedHashMap<>();row.put("exercise",e);row.put("level",level);row.put("rank",Ranking.rank(level));row.put("score",score);row.put("progress",level==24?100:Math.max(0,Math.min(100,100*(score-low)/(high-low))));row.put("nextRank",level==24?"Maximum rank":Ranking.rank(level+1));return row;

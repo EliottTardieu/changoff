@@ -1,6 +1,6 @@
 # Time to Chang
 
-A personal strength tracker with an Angular / TypeScript frontend, Java 21 Spring Boot REST API, and PostgreSQL. Log sets, earn ranks, inspect the next target, and follow your training history.
+A personal strength tracker with an Angular / TypeScript frontend, Java 21 Spring Boot REST API, and PostgreSQL. Log weights and reps, graph your progress, and follow your complete training history. Enable optional ranks in your profile when you want benchmark targets.
 
 ## Set up from scratch
 
@@ -77,12 +77,14 @@ You can now log strength sets and use **WOD workshop** to generate, save, schedu
 **The SQL scripts are called automatically. Do not run them manually.** There are two stages:
 
 1. On the first start with an empty volume, the PostgreSQL container creates the `changoff` database and user using the settings in `compose.yaml`.
-2. Once PostgreSQL is healthy, the API starts. Spring Boot loads Flyway, enabled by `spring.flyway.enabled=true` in `backend/src/main/resources/application.properties`. Flyway discovers and runs migrations from `backend/src/main/resources/db/migration/` in version order, before the API becomes ready.
+2. Once PostgreSQL is healthy, the API starts. Spring Boot loads Flyway, enabled by `spring.flyway.enabled=true` in `backend/src/main/resources/application.properties`. Flyway discovers SQL migrations from `backend/src/main/resources/db/migration/` and Java migrations from `backend/src/main/java/db/migration/` in version order, before the API becomes ready.
 
 | Script | What it creates |
 |---|---|
 | `V1__initial.sql` | Accounts, sessions, and strength logs |
 | `V2__wod_workshop.sql` | WOD tables, user preferences/restrictions, exercise catalog, levels, formats, templates, and prescriptions |
+| `V3__optional_ranks.sql` | Per-user rank visibility preference, enabled by default |
+| `V4__tracking_rep_range` (Java migration) | Expands tracked sets to 1–1,000 reps, preserving all existing records |
 
 Flyway records completed migrations in `flyway_schema_history`. On subsequent starts, it only applies new migrations; it does not recreate the database or reseed existing records. The strength-ranking exercise catalog is loaded separately from `backend/src/main/resources/exercises.json`.
 
@@ -133,7 +135,7 @@ docker compose down --volumes
 docker compose up --build -d
 ```
 
-PostgreSQL will create a new database, and Flyway will apply both migrations and seed the WOD catalog again. Create a new account afterward. You can change `DB_PASSWORD` in `.env` between these two commands because the replacement database has not been initialized yet.
+PostgreSQL will create a new database, and Flyway will apply all migrations and seed the WOD catalog again. Create a new account afterward. You can change `DB_PASSWORD` in `.env` between these two commands because the replacement database has not been initialized yet.
 
 ## Optional: back up and restore
 
@@ -178,6 +180,21 @@ Restore only into an empty application database. The backup includes Flyway's hi
 - Responsive dashboard, search, muscle-group filters, empty states, validation and source explanations.
 - Database constraints and Flyway migrations; parameterized queries and server-side rank calculations.
 - Same-origin reverse proxy, mutation protection header, auth rate limiting, internal-only API and database services.
+
+## Exercise progress and optional ranks
+
+In **My profile**, toggle **Enable ranks** and save. Ranks start enabled for compatibility, but turning them off hides the ladder, rank badges and rank notifications. Your sets are preserved and continue to count if you turn ranks back on later.
+
+Click an exercise card in the overview to open its progress modal. Close it with Escape, the close button, or a click outside. The modal shows:
+
+- Heaviest saved set and most-reps set, each paired with its actual load/reps and date. These may be different sets; they are never combined into an invented personal best.
+- A graph of daily heaviest sets or daily highest reps, with all-history, 90-day and 30-day views. Filter by exact reps or exact weight to compare similar sets. Dates without training are not plotted as zero.
+- An expandable table with the exact sets behind the graph. The training log retains **every** set and can be filtered by exercise.
+- Optional ranks alongside the graph and exercise cards. Graphs include all your sets regardless of benchmark dataset; ranks retain the existing dataset-specific scoring.
+
+Ties in daily bests prefer more reps at the same weight (or more weight at the same reps). All-time records use the same rule, then the most recent date. Pull-up and dip weights mean **added load**; zero is a valid bodyweight set. Logging or deleting a set updates the records and graphs.
+
+Sets can contain **1–1,000 reps**. Rank calculations and estimated one-rep maximums remain limited to **1–12 reps**; higher-rep sets stay in your history and graphs without affecting ranks. Existing training data is preserved by the automatic migrations; no database reset is needed.
 
 ## WOD workshop
 
@@ -235,9 +252,10 @@ npm ci
 npx playwright install chromium
 npm run test:e2e
 npm run test:wod
+npm run test:progress
 ```
 
-Set `CHANGOFF_URL` to test another local URL. Browser tests create isolated test accounts in the running database.
+Set `CHANGOFF_URL` to test another local URL. Browser tests create isolated test accounts in the running database. The progress test checks daily records, graph filters, saved rank preferences, higher-rep sets, deletion, bodyweight sets, and mobile layout.
 
 ## REST API
 
