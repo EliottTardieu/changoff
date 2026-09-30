@@ -7,7 +7,9 @@
     "build": "ng build",
     "test:e2e": "node ../scripts/browser-smoke.mjs",
     "test:wod": "node ../scripts/wod-browser-smoke.mjs",
-    "test:progress": "node ../scripts/progress-browser-smoke.mjs"
+    "test:progress": "node ../scripts/progress-browser-smoke.mjs",
+    "test:cardio": "node ../scripts/cardio-i18n-browser-smoke.mjs",
+    "test:i18n": "node ../scripts/i18n-check.mjs"
   },
   "dependencies": {
     "@angular/common": "^21.0.0",

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 const browser=await chromium.launch({headless:true});
 try {
-  const page=await browser.newPage({viewport:{width:1440,height:1100}});
+  const page=await browser.newPage({viewport:{width:1440,height:1100},timezoneId:'Europe/Paris'});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   const base=process.env.CHANGOFF_URL||'http://localhost:8080';
   for(let attempt=0;attempt<30;attempt++) {
@@ -37,6 +37,7 @@ try {
   assert.match(await page.locator('.personal-bests').innerText(),/60 kg × 3 reps/);
   assert.match(await page.locator('.personal-bests').innerText(),/20 reps at 45 kg/);
   assert.equal(await page.locator('.chart-point').count(),3);
+  assert.match(await page.locator('.training-chart').textContent(),/Jan 1, 2026/,'Date-only records keep their calendar day in Europe/Paris');
   assert.deepEqual(await page.locator('.chart-point').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('aria-label'))),[
     '2026-01-01: 50 kg × 5 reps','2026-02-01: 60 kg × 3 reps','2026-03-01: 45 kg × 20 reps'
   ]);
@@ -54,6 +55,8 @@ try {
   await page.getByRole('button',{name:'Save changes',exact:true}).click();
   await page.getByRole('status').filter({hasText:'Profile updated'}).waitFor();
   await page.reload();
+  // Locale routes now retain the current page across reloads.
+  await page.getByRole('navigation').getByRole('button',{name:'Overview'}).click();
   await page.getByRole('button',{name:'Bench press progress',exact:true}).click();
   await page.getByRole('dialog',{name:'Bench press',exact:true}).waitFor();
   assert.equal(await page.getByRole('navigation').getByRole('button',{name:'Rank ladder'}).count(),0);

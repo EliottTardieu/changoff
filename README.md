@@ -1,6 +1,6 @@
 # Time to Chang
 
-A personal strength tracker with an Angular / TypeScript frontend, Java 21 Spring Boot REST API, and PostgreSQL. Log weights and reps, graph your progress, and follow your complete training history. Enable optional ranks in your profile when you want benchmark targets.
+A personal strength and cardio tracker with an Angular / TypeScript frontend, Java 21 Spring Boot REST API, and PostgreSQL. Log weights and reps, graph your progress, and follow your complete training history. Enable optional ranks in your profile when you want benchmark targets.
 
 ## Set up from scratch
 
@@ -70,7 +70,7 @@ The application health check is available at **http://localhost:8080/api/health*
 {"status":"UP"}
 ```
 
-You can now log strength sets and use **WOD workshop** to generate, save, schedule, and share workouts.
+You can now log strength sets, track runs, rides and jump-rope sessions in **Cardio**, and use **WOD workshop** to generate, save, schedule, and share workouts.
 
 ## How database initialization works
 
@@ -85,6 +85,7 @@ You can now log strength sets and use **WOD workshop** to generate, save, schedu
 | `V2__wod_workshop.sql` | WOD tables, user preferences/restrictions, exercise catalog, levels, formats, templates, and prescriptions |
 | `V3__optional_ranks.sql` | Per-user rank visibility preference, enabled by default |
 | `V4__tracking_rep_range` (Java migration) | Expands tracked sets to 1–1,000 reps, preserving all existing records |
+| `V5__cardio.sql` | User-owned cardio sessions with duration, distance/repetitions, notes and reference dataset |
 
 Flyway records completed migrations in `flyway_schema_history`. On subsequent starts, it only applies new migrations; it does not recreate the database or reseed existing records. The strength-ranking exercise catalog is loaded separately from `backend/src/main/resources/exercises.json`.
 
@@ -94,7 +95,7 @@ To check which migrations ran:
 docker compose exec db psql -U changoff -d changoff -c 'SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;'
 ```
 
-If you want to initialize **only the database and API**, without starting the frontend:
+If you want to initialize **only the database and API**, without starting the separate nginx frontend container:
 
 ```sh
 docker compose up --build -d db api
@@ -200,6 +201,30 @@ Sets can contain **1–1,000 reps**. Rank calculations and estimated one-rep max
 
 The WOD workshop adds a generator, history/planning, and statistics in a new sidebar entry. It supports AMRAP, EMOM, For Time and Chipper; six experience levels; adjustable difficulty; equipment/muscle/movement bans; saved preferences; substitutions; personal results; and shared WODs with self-removal. See [docs/wods.md](docs/wods.md) for the model, rules and API. The additive Flyway V2 migration preserves existing users and strength logs.
 
+## Cardio
+
+The **Cardio** sidebar page tracks jump rope, running (400 m, 1 km, 5 km, 10 km and 20 km), and cycling. Click an activity for its graph, logging form and session history. Cardio follows the same profile rank toggle as strength. Only verified published benchmark categories are used: rope and unsupported cycling distances stay unranked. See [docs/cardio.md](docs/cardio.md) for sources, exact coverage and comparison conventions.
+
+## English and French
+
+Use the **Language / Langue** selector in the top bar (also available before sign-in). URLs include `/en/` or `/fr/`, for example `/fr/cardio` or `/en/wods/history`. Switching language keeps the current page, WOD tab, query string and fragment; direct links and refreshes work. The locale is carried by the URL, not by account settings or browser storage.
+
+English source messages are the translation keys. The standalone `TranslatePipe` and `frontend/src/locales/fr.ts` translate the interface, exercise catalog, generated WOD instructions, errors and notifications. Angular’s `LOCALE_ID` formats dates and numbers. User-entered names, workout titles and notes remain unchanged. Language switching reloads the page, so save edits before switching.
+
+## Routing with or without a proxy
+
+All frontend requests use root-relative `/api/...` paths. Backend controllers, health checks and the session cookie use the same prefix. Locale prefixes never apply to API requests. The included nginx forwards `/api/...` unchanged; for another nginx proxy use `proxy_pass http://api:8080;` **without a trailing slash**, so `/api/` is not stripped. Serve the frontend and API under the same origin; no backend URL needs to be compiled into Angular.
+
+For a deployment **without any reverse proxy**, the backend Docker image includes the compiled Angular site and Spring Boot serves both the UI and API. Start just these services:
+
+```sh
+docker compose -f compose.yaml -f compose.direct.yaml up --build -d db api
+```
+
+Open **http://localhost:8081/fr/overview** or **http://localhost:8081/en/overview**. API requests go directly to Spring Boot at `http://localhost:8081/api/...`. `DIRECT_PORT` changes this optional port; it binds to loopback by default. If the separate web container is already running, it can remain in place or be stopped with `docker compose stop web`. This uses the same database volume and requires no reset.
+
+The backend Docker build context is now the repository root (`docker build -f backend/Dockerfile .`), because it builds and embeds Angular. Host-side Maven development still uses Angular’s development server and its `/api/**` proxy, or you can copy the frontend build into Spring Boot’s static resources before packaging.
+
 ## Ranking model
 
 See [docs/ranking.md](docs/ranking.md) for the researched data, exact conventions, formulas and rank mapping. The underlying benchmarks are sourced; the 24-rank game progression is our own interpolation. These are reference estimates, not universal strength percentiles or a prescription to attempt a maximum lift.
@@ -253,9 +278,11 @@ npx playwright install chromium
 npm run test:e2e
 npm run test:wod
 npm run test:progress
+npm run test:cardio
+npm run test:i18n
 ```
 
-Set `CHANGOFF_URL` to test another local URL. Browser tests create isolated test accounts in the running database. The progress test checks daily records, graph filters, saved rank preferences, higher-rep sets, deletion, bodyweight sets, and mobile layout.
+Set `CHANGOFF_URL` to test another local URL. Browser tests create isolated test accounts in the running database. The progress test checks daily records, graph filters, saved rank preferences, higher-rep sets, deletion, bodyweight sets, and mobile layout. The cardio test checks French and English routes, cardio logging and ranks, profile visibility, modal graphs, WOD translations and mobile layout. Set `CHANGOFF_DIRECT_URL=http://localhost:8081` to additionally check direct Spring Boot hosting. Backend cardio tests cover exact benchmark boundaries, dataset snapshots, invalid inputs and ownership.
 
 ## REST API
 
@@ -273,6 +300,9 @@ All routes except auth and health require the session cookie. JSON mutations als
 | GET | `/api/dashboard` | Best ranks and next-rank progress |
 | GET / POST | `/api/lifts` | Read training history / save set |
 | DELETE | `/api/lifts/{id}` | Delete own set and recalculate rank |
+| GET | `/api/cardio/benchmarks` | Cardio thresholds and sources |
+| GET / POST | `/api/cardio` | Read cardio history / save session |
+| DELETE | `/api/cardio/{id}` | Delete an owned cardio session |
 
 Example registration payload:
 

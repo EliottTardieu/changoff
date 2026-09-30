@@ -1,6 +1,7 @@
 import { Component, computed, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from './i18n';
 
 export interface Lift { id:string; exercise:string; weight:number; reps:number; bodyweight:number; standard:string; score:number; performed_on:string; }
 
@@ -10,35 +11,35 @@ export function bestSet(lifts: Lift[], metric: 'weight'|'reps'): Lift | undefine
 }
 
 @Component({
-  selector: 'app-progress', standalone: true, imports: [CommonModule, FormsModule],
+  selector: 'app-progress', standalone: true, imports: [CommonModule, FormsModule, TranslatePipe],
   template: `
     <div class="progress-controls">
-      <label>Plot<select [ngModel]="metric()" (ngModelChange)="metric.set($event); comparison.set(null)"><option value="weight">Heaviest set per day (kg)</option><option value="reps">Most reps per day</option></select></label>
-      <label>Time range<select [ngModel]="days()" (ngModelChange)="days.set($event)"><option [ngValue]="0">All history</option><option [ngValue]="90">Last 90 days</option><option [ngValue]="30">Last 30 days</option></select></label>
-      <label>{{metric()==='weight'?'Compare at reps':'Compare at weight (kg)'}}<input type="number" [min]="metric()==='weight'?1:0" [step]="metric()==='weight'?1:0.1" [ngModel]="comparison()" (ngModelChange)="comparison.set($event)" placeholder="All sets"></label>
+      <label>{{ 'Plot' | t }}<select [ngModel]="metric()" (ngModelChange)="metric.set($event); comparison.set(null)"><option value="weight">{{ 'Heaviest set per day (kg)' | t }}</option><option value="reps">{{ 'Most reps per day' | t }}</option></select></label>
+      <label>{{ 'Time range' | t }}<select [ngModel]="days()" (ngModelChange)="days.set($event)"><option [ngValue]="0">{{ 'All history' | t }}</option><option [ngValue]="90">{{ 'Last 90 days' | t }}</option><option [ngValue]="30">{{ 'Last 30 days' | t }}</option></select></label>
+      <label>{{ (metric()==='weight'?'Compare at reps':'Compare at weight (kg)') | t }}<input type="number" [min]="metric()==='weight'?1:0" [step]="metric()==='weight'?1:0.1" [ngModel]="comparison()" (ngModelChange)="comparison.set($event)" [placeholder]="('All sets' | t)"></label>
     </div>
-    <p class="fine">{{addedLoad()?'Weights are added load; 0 kg means bodyweight alone.':'Weights are the external load you logged.'}} Each point is an actual daily best set, not an estimated maximum. Use the comparison filter to compare the same reps or load. Days without entries are not zero workouts.</p>
+    <p class="fine">{{ '{0} Each point is an actual daily best set, not an estimated maximum. Use the comparison filter to compare the same reps or load. Days without entries are not zero workouts.' | t:((addedLoad()?'Weights are added load; 0 kg means bodyweight alone.':'Weights are the external load you logged.') | t) }}</p>
     @if(points().length) {
-      <div class="chart-summary" aria-live="polite"><strong>{{filtered().length}} sets · {{points().length}} training days</strong><span>First → latest daily best: {{points()[0].value}} → {{points()[points().length-1].value}} {{metric()==='weight'?'kg':'reps'}}</span></div>
-      <svg class="training-chart" viewBox="0 0 760 280" role="img" [attr.aria-label]="name()+' '+(metric()==='weight'?'weight':'repetitions')+' progress over time. Exact sets are available in the table below.'">
+      <div class="chart-summary" aria-live="polite"><strong>{{ '{0} sets · {1} training days' | t:(filtered().length | t):(points().length | t) }}</strong><span>{{ 'First → latest daily best: {0} → {1} {2}' | t:(points()[0].value | t):(points()[points().length-1].value | t):((metric()==='weight'?'kg':'reps') | t) }}</span></div>
+      <svg class="training-chart" viewBox="0 0 760 280" role="img" [attr.aria-label]="'{0} {1} progress over time. Exact sets are available in the table below.' | t:(name() | t):((metric()==='weight'?'weight':'repetitions') | t)">
         @for(tick of ticks(); track tick.value) {
           <line x1="60" x2="730" [attr.y1]="tick.y" [attr.y2]="tick.y" class="chart-grid" />
-          <text x="50" [attr.y]="tick.y+4" text-anchor="end">{{tick.value|number:'1.0-1'}}</text>
+          <text x="50" [attr.y]="tick.y+4" text-anchor="end">{{ tick.value|number:'1.0-1' | t }}</text>
         }
-        <text x="60" y="16">{{metric()==='weight'?'kg':'reps'}}</text>
+        <text x="60" y="16">{{ (metric()==='weight'?'kg':'reps') | t }}</text>
         <polyline [attr.points]="line()" class="chart-line" />
         @for(p of points(); track p.lift.performed_on) {
-          <circle [attr.cx]="p.x" [attr.cy]="p.y" r="5" class="chart-point" tabindex="0" [attr.aria-label]="p.lift.performed_on+': '+p.lift.weight+' kg × '+p.lift.reps+' reps'">
-            <title>{{p.lift.performed_on}}: {{p.lift.weight}} kg × {{p.lift.reps}} reps</title>
+          <circle [attr.cx]="p.x" [attr.cy]="p.y" r="5" class="chart-point" tabindex="0" [attr.aria-label]="'{0}: {1} kg × {2} reps' | t:p.lift.performed_on:p.lift.weight:p.lift.reps">
+            <title>{{ '{0}: {1} kg × {2} reps' | t:(p.lift.performed_on | t):(p.lift.weight | t):(p.lift.reps | t) }}</title>
           </circle>
         }
-        <text x="60" y="266">{{points()[0].lift.performed_on|date:'MMM d, yyyy':'UTC'}}</text>
-        @if(points().length>1){<text x="730" y="266" text-anchor="end">{{points()[points().length-1].lift.performed_on|date:'MMM d, yyyy':'UTC'}}</text>}
+        <text x="60" y="266">{{ points()[0].lift.performed_on|date:'mediumDate' | t }}</text>
+        @if(points().length>1){<text x="730" y="266" text-anchor="end">{{ points()[points().length-1].lift.performed_on|date:'mediumDate' | t }}</text>}
       </svg>
-      @if(points().length===1){<p class="fine">Your starting point is saved. Log another date to see a trend.</p>}
-      <details class="chart-data"><summary>View daily best sets ({{points().length}})</summary><div class="table-wrap"><table><caption>{{name()}} — plotted sets</caption><thead><tr><th>Date</th><th>{{addedLoad()?'Added weight':'Weight'}}</th><th>Reps</th></tr></thead><tbody>@for(p of points();track p.lift.performed_on){<tr><td>{{p.lift.performed_on|date:'MMM d, yyyy':'UTC'}}</td><td>{{p.lift.weight}} kg</td><td>{{p.lift.reps}}</td></tr>}</tbody></table></div></details>
+      @if(points().length===1){<p class="fine">{{ 'Your starting point is saved. Log another date to see a trend.' | t }}</p>}
+      <details class="chart-data"><summary>{{ 'View daily best sets ({0})' | t:(points().length | t) }}</summary><div class="table-wrap"><table><caption>{{ '{0} — plotted sets' | t:(name() | t) }}</caption><thead><tr><th>{{ 'Date' | t }}</th><th>{{ (addedLoad()?'Added weight':'Weight') | t }}</th><th>{{ 'Reps' | t }}</th></tr></thead><tbody>@for(p of points();track p.lift.performed_on){<tr><td>{{ p.lift.performed_on|date:'mediumDate' | t }}</td><td>{{ '{0} kg' | t:(p.lift.weight | t) }}</td><td>{{ p.lift.reps | t }}</td></tr>}</tbody></table></div></details>
     } @else {
-      <div class="empty"><h3>{{lifts().length?'No sets match these filters.':'Your progress starts with one set.'}}</h3><p>{{lifts().length?'Try all history or clear the comparison filter.':'Log a set for this exercise to start your graph.'}}</p></div>
+      <div class="empty"><h3>{{ (lifts().length?'No sets match these filters.':'Your progress starts with one set.') | t }}</h3><p>{{ (lifts().length?'Try all history or clear the comparison filter.':'Log a set for this exercise to start your graph.') | t }}</p></div>
     }
   `
 })

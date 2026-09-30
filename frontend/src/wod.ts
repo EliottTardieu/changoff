@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe, translate, language } from './i18n';
+import { apiRequest, ApiError } from './api';
 
 interface Choice { id:string; name:string; }
 interface Movement { id:string; name:string; family:string; category:string; movementType:string; difficulty:number; unit:string; note:string; equipment:string[]; patterns:string[]; muscles:string[]; }
@@ -15,35 +17,35 @@ interface Summary { id:string; title:string; type_id:string; stimulus_id:string;
 interface Detail extends Summary { config:Config; items:Item[]; instructions:string; isOwner:boolean; canEdit:boolean; participants:{id:string;name:string}[]; duration_seconds:number|null; rounds_completed:number|null; extra_reps:number|null; effort:number|null; notes:string; }
 interface Statistics { completed:number; trainingDays:number; loggedMinutes:number; averageEffort:number|null; upcoming:number; weekly:{week:string;count:number}[]; muscles:Record<string,number>; types:Record<string,number>; mostHit:string[]; leastHit:string[]; uniqueMovements:number; windowStart:string; windowEnd:string; }
 
-@Component({selector:'app-wod',standalone:true,imports:[CommonModule,FormsModule],templateUrl:'./wod.html',styleUrl:'./wod.css'})
+@Component({selector:'app-wod',standalone:true,imports:[CommonModule,FormsModule,TranslatePipe],templateUrl:'./wod.html',styleUrl:'./wod.css'})
 export class WodComponent implements OnInit {
   @Input({required:true}) userId='';
   @Output() sessionExpired=new EventEmitter<void>();
-  tab=signal('generate'); loading=signal(true); busy=signal(false); error=signal(''); notice=signal('');
+  tab=signal(['generate','history','statistics'].includes(location.pathname.split('/')[3])?location.pathname.split('/')[3]:'generate'); loading=signal(true); busy=signal(false); error=signal(''); notice=signal('');
   catalog=signal<Catalog|null>(null); draft=signal<Draft|null>(null); history=signal<Summary[]>([]); detail=signal<Detail|null>(null); statistics=signal<Statistics|null>(null);
   preferences:Preferences={level:1,equipment:[],restrictions:[]};
   config:Config={type:'AUTO',stimulus:'balanced',level:1,intensity:3,duration:20,count:4,rounds:3,scheduledOn:this.today(),equipment:[],bannedExercises:[],bannedPatterns:[],bannedMuscles:[],bannedEquipment:[]};
-  title='My WOD'; editingId=''; editingRevision:number|null=null; banSearch=''; restrictionKind='exercise'; restrictionTarget=''; restrictionReason=''; participantEmail=''; confirmLeave=false;
+  title=translate('My WOD'); editingId=''; editingRevision:number|null=null; banSearch=''; restrictionKind='exercise'; restrictionTarget=''; restrictionReason=''; participantEmail=''; confirmLeave=false;
   historyFilter=signal('all'); historyQuery=signal(''); historyFrom=signal(''); historyTo=signal('');
   filtered=computed(()=>this.history().filter(w=>(this.historyFilter()==='all'||(this.historyFilter()==='upcoming'?w.status==='planned'&&w.scheduled_on>=this.today():w.status===this.historyFilter()))&&w.title.toLowerCase().includes(this.historyQuery().toLowerCase())&&(!this.historyFrom()||w.scheduled_on>=this.historyFrom())&&(!this.historyTo()||w.scheduled_on<=this.historyTo())));
   result={status:'planned',scheduledOn:this.today(),completedOn:this.today(),durationSeconds:null as number|null,roundsCompleted:null as number|null,extraReps:null as number|null,effort:null as number|null,notes:''};
   today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
   async api<T>(path:string,method='GET',body?:unknown):Promise<T>{
-    const response=await fetch('/api/wods'+path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json','X-Requested-With':'changoff'},body:body===undefined?undefined:JSON.stringify(body)});
-    if(!response.ok){if(response.status===401)this.sessionExpired.emit();const data=await response.json().catch(()=>({message:'Request failed. Please try again.'}));throw new Error(data.message||'Request failed. Please try again.');}
-    return response.status===204?undefined as T:response.json();
+    try{return await apiRequest<T>('/api/wods'+path,method,body);}catch(e){if(e instanceof ApiError&&e.status===401)this.sessionExpired.emit();throw e;}
   }
   async act(action:()=>Promise<void>){if(this.busy())return;this.busy.set(true);this.error.set('');this.notice.set('');try{await action();}catch(e){this.error.set(e instanceof Error?e.message:'Something went wrong.');}finally{this.busy.set(false);}}
-  async ngOnInit(){await this.act(async()=>{const [catalog,prefs]=await Promise.all([this.api<Catalog>('/catalog'),this.api<Preferences>('/preferences')]);this.catalog.set(catalog);this.preferences=prefs;this.config.level=prefs.level;this.config.equipment=[...prefs.equipment];await this.refresh();});this.loading.set(false);}
+  async ngOnInit(){window.addEventListener('popstate',this.onPopState);await this.act(async()=>{const [catalog,prefs]=await Promise.all([this.api<Catalog>('/catalog'),this.api<Preferences>('/preferences')]);this.catalog.set(catalog);this.preferences=prefs;this.config.level=prefs.level;this.config.equipment=[...prefs.equipment];await this.refresh();});this.loading.set(false);}
+  onPopState=()=>{const tab=location.pathname.split('/')[3];if(['generate','history','statistics'].includes(tab))this.tab.set(tab);};
+  ngOnDestroy(){window.removeEventListener('popstate',this.onPopState);}
   async refresh(){const [history,statistics]=await Promise.all([this.api<Summary[]>(''),this.api<Statistics>('/statistics')]);this.history.set(history);this.statistics.set(statistics);}
-  changeTab(tab:string){this.tab.set(tab);this.error.set('');this.notice.set('');}
-  label(choices:Choice[]|undefined,id:string){return choices?.find(c=>c.id===id)?.name||id;}
+  changeTab(tab:string){history.pushState({},'',`/${language}/wods/${tab}`+location.search+location.hash);this.tab.set(tab);this.error.set('');this.notice.set('');}
+  label(choices:Choice[]|undefined,id:string){return translate(choices?.find(c=>c.id===id)?.name||id);}
   movement(id:string){return this.catalog()?.exercises.find(e=>e.id===id);}
   typeName(type:string){return this.label(this.catalog()?.types,type);}
   levelName(id:number){return this.catalog()?.levels.find(l=>l.id===id)?.name||'';}
   toggle(list:string[],id:string){const index=list.indexOf(id);index<0?list.push(id):list.splice(index,1);this.invalidate();}
   invalidate(){this.draft.set(null);}
-  matchingMovements(){return this.catalog()?.exercises.filter(e=>e.name.toLowerCase().includes(this.banSearch.toLowerCase()))||[];}
+  matchingMovements(){return this.catalog()?.exercises.filter(e=>translate(e.name).toLowerCase().includes(this.banSearch.toLowerCase()))||[];}
   restrictionChoices():Choice[]{const c=this.catalog();return !c?[]:this.restrictionKind==='exercise'?c.exercises:this.restrictionKind==='pattern'?c.patterns:this.restrictionKind==='muscle'?c.muscles:c.equipment;}
   restrictionName(r:Restriction){const c=this.catalog();return this.label(r.kind==='exercise'?c?.exercises:r.kind==='pattern'?c?.patterns:r.kind==='muscle'?c?.muscles:c?.equipment,r.target);}
   addRestriction(){if(!this.restrictionTarget)return;if(!this.preferences.restrictions.some(r=>r.kind===this.restrictionKind&&r.target===this.restrictionTarget)){this.preferences.restrictions.push({kind:this.restrictionKind,target:this.restrictionTarget,reason:this.restrictionReason,active:true});}this.restrictionTarget='';this.restrictionReason='';}
@@ -52,11 +54,11 @@ export class WodComponent implements OnInit {
   async generate(){await this.act(async()=>{const d=await this.api<Draft>('/generate','POST',{config:this.config});this.draft.set(d);this.config=structuredClone(d.config);});}
   async recalculate(){const d=this.draft();if(!d)return;await this.act(async()=>{this.draft.set(await this.api<Draft>('/generate','POST',{config:this.config,exercises:this.prescriptions(d.items)}));});}
   async substitute(index:number,id:string){const d=this.draft();if(!d||!id)return;const suggestion=d.items[index].alternatives.find(a=>a.exerciseId===id);if(!suggestion)return;await this.act(async()=>{const sets=this.prescriptions(d.items);sets[index]=suggestion;this.draft.set(await this.api<Draft>('/generate','POST',{config:this.config,exercises:sets}));this.notice.set('Movement swapped and difficulty recalculated.');});}
-  async save(){const d=this.draft();if(!d)return;await this.act(async()=>{const saved=await this.api<Detail>(this.editingId?'/'+this.editingId:'',this.editingId?'PUT':'POST',{title:this.title,config:this.config,exercises:this.prescriptions(d.items),revision:this.editingRevision});this.draft.set(null);this.editingId='';this.editingRevision=null;await this.refresh();this.showDetail(saved);this.tab.set('history');this.notice.set('WOD saved. Plan it, record your result, or add a training partner below.');});}
+  async save(){const d=this.draft();if(!d)return;await this.act(async()=>{const saved=await this.api<Detail>(this.editingId?'/'+this.editingId:'',this.editingId?'PUT':'POST',{title:this.title,config:this.config,exercises:this.prescriptions(d.items),revision:this.editingRevision});this.draft.set(null);this.editingId='';this.editingRevision=null;await this.refresh();this.showDetail(saved);this.changeTab('history');this.notice.set('WOD saved. Plan it, record your result, or add a training partner below.');});}
   async open(id:string){await this.act(async()=>{this.showDetail(await this.api<Detail>('/'+id));});}
   showDetail(w:Detail){this.detail.set(w);this.confirmLeave=false;this.participantEmail='';this.result={status:w.status,scheduledOn:w.scheduled_on,completedOn:w.completed_on||this.today(),durationSeconds:w.duration_seconds,roundsCompleted:w.rounds_completed,extraReps:w.extra_reps,effort:w.effort,notes:w.notes};}
-  async useWorkout(edit:boolean){const w=this.detail();if(!w)return;await this.act(async()=>{this.config=structuredClone(w.config);this.config.scheduledOn=edit?w.scheduled_on:this.today();this.title=edit?w.title:w.title+' · repeat';this.editingId=edit?w.id:'';this.editingRevision=edit?w.revision:null;this.draft.set(await this.api<Draft>('/generate','POST',{config:this.config,exercises:this.prescriptions(w.items)}));this.tab.set('generate');});}
-  cancelEdit(){this.editingId='';this.editingRevision=null;this.draft.set(null);this.title='My WOD';}
+  async useWorkout(edit:boolean){const w=this.detail();if(!w)return;await this.act(async()=>{this.config=structuredClone(w.config);this.config.scheduledOn=edit?w.scheduled_on:this.today();this.title=edit?w.title:w.title+' · '+translate('repeat');this.editingId=edit?w.id:'';this.editingRevision=edit?w.revision:null;this.draft.set(await this.api<Draft>('/generate','POST',{config:this.config,exercises:this.prescriptions(w.items)}));this.changeTab('generate');});}
+  cancelEdit(){this.editingId='';this.editingRevision=null;this.draft.set(null);this.title=translate('My WOD');}
   async saveResult(){const w=this.detail();if(!w)return;await this.act(async()=>{this.showDetail(await this.api<Detail>('/'+w.id+'/result','PUT',{...this.result,completedOn:this.result.status==='completed'?this.result.completedOn:null}));await this.refresh();this.notice.set('Your schedule and result have been saved.');});}
   async share(){const w=this.detail();if(!w)return;await this.act(async()=>{this.showDetail(await this.api<Detail>('/'+w.id+'/participants','POST',{email:this.participantEmail}));this.notice.set('Participant added. This WOD is now in their personal WOD history.');});}
   async leave(){const w=this.detail();if(!w)return;await this.act(async()=>{await this.api('/'+w.id+'/participation','DELETE');this.detail.set(null);await this.refresh();this.notice.set('Removed from your WOD history. Other participants keep their records.');});}
@@ -64,5 +66,5 @@ export class WodComponent implements OnInit {
   typeRows(){return Object.entries(this.statistics()?.types||{});}
   maxMuscles(){return Math.max(1,...Object.values(this.statistics()?.muscles||{}));}
   maxWeek(){return Math.max(1,...(this.statistics()?.weekly.map(w=>w.count)||[]));}
-  names(ids:string[]){return ids.map(id=>this.label(this.catalog()?.muscles,id)).join(', ')||'No completed WODs yet';}
+  names(ids:string[]){return ids.map(id=>this.label(this.catalog()?.muscles,id)).join(', ')||translate('No completed WODs yet');}
 }

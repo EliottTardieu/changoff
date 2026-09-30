@@ -1,0 +1,521 @@
+[
+  {
+    "activity": "cycling",
+    "distanceMeters": 1000,
+    "source": "https://cyclinglevel.com/cycling-times/1k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      131,
+      113,
+      101,
+      92,
+      86
+    ],
+    "female": [
+      164,
+      139,
+      122,
+      111,
+      103
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 4000,
+    "source": "https://cyclinglevel.com/cycling-times/4k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      577,
+      499,
+      445,
+      407,
+      380
+    ],
+    "female": [
+      724,
+      611,
+      538,
+      488,
+      453
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 5000,
+    "source": "https://cyclinglevel.com/cycling-times/5k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      732,
+      633,
+      565,
+      517,
+      482
+    ],
+    "female": [
+      919,
+      776,
+      683,
+      620,
+      575
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 8000,
+    "source": "https://cyclinglevel.com/cycling-times/8k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      1211,
+      1047,
+      935,
+      855,
+      797
+    ],
+    "female": [
+      1519,
+      1283,
+      1130,
+      1025,
+      950
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 10000,
+    "source": "https://cyclinglevel.com/cycling-times/10k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      1537,
+      1329,
+      1187,
+      1086,
+      1013
+    ],
+    "female": [
+      1929,
+      1629,
+      1435,
+      1301,
+      1206
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 15000,
+    "source": "https://cyclinglevel.com/cycling-times/15k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      2372,
+      2051,
+      1832,
+      1676,
+      1562
+    ],
+    "female": [
+      2977,
+      2513,
+      2214,
+      2008,
+      1862
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 20000,
+    "source": "https://cyclinglevel.com/cycling-times/20k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      3227,
+      2790,
+      2492,
+      2280,
+      2126
+    ],
+    "female": [
+      4050,
+      3419,
+      3012,
+      2732,
+      2533
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 25000,
+    "source": "https://cyclinglevel.com/cycling-times/25k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      4098,
+      3543,
+      3164,
+      2895,
+      2699
+    ],
+    "female": [
+      5142,
+      4341,
+      3824,
+      3468,
+      3216
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 30000,
+    "source": "https://cyclinglevel.com/cycling-times/30k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      4980,
+      4306,
+      3845,
+      3518,
+      3280
+    ],
+    "female": [
+      6250,
+      5277,
+      4647,
+      4215,
+      3909
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 40000,
+    "source": "https://cyclinglevel.com/cycling-times/40k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      6775,
+      5858,
+      5232,
+      4786,
+      4463
+    ],
+    "female": [
+      8503,
+      7179,
+      6323,
+      5735,
+      5317
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 50000,
+    "source": "https://cyclinglevel.com/cycling-times/50k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      8603,
+      7438,
+      6642,
+      6077,
+      5666
+    ],
+    "female": [
+      10796,
+      9115,
+      8028,
+      7281,
+      6752
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 80000,
+    "source": "https://cyclinglevel.com/cycling-times/80k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      14224,
+      12299,
+      10983,
+      10048,
+      9369
+    ],
+    "female": [
+      17851,
+      15071,
+      13274,
+      12040,
+      11164
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 100000,
+    "source": "https://cyclinglevel.com/cycling-times/100k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      18060,
+      15615,
+      13945,
+      12758,
+      11895
+    ],
+    "female": [
+      22665,
+      19135,
+      16854,
+      15287,
+      14174
+    ]
+  },
+  {
+    "activity": "cycling",
+    "distanceMeters": 160000,
+    "source": "https://cyclinglevel.com/cycling-times/160k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      29863,
+      25820,
+      23059,
+      21095,
+      19669
+    ],
+    "female": [
+      37477,
+      31641,
+      27868,
+      25277,
+      23437
+    ]
+  },
+  {
+    "activity": "running",
+    "distanceMeters": 400,
+    "source": "https://marathonhandbook.com/average-400-meter-time/",
+    "reference": "Ages 18–39 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate Recreational",
+      "High-Level Recreational",
+      "Sub-Elite",
+      "National Class",
+      "Elite"
+    ],
+    "male": [
+      99,
+      88,
+      72,
+      61,
+      53,
+      50,
+      47
+    ],
+    "female": [
+      109,
+      97,
+      80,
+      68,
+      59,
+      56,
+      53
+    ]
+  },
+  {
+    "activity": "running",
+    "distanceMeters": 1000,
+    "source": "https://runninglevel.com/running-times/1k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      335,
+      277,
+      236,
+      206,
+      184
+    ],
+    "female": [
+      380,
+      320,
+      275,
+      242,
+      217
+    ]
+  },
+  {
+    "activity": "running",
+    "distanceMeters": 5000,
+    "source": "https://runninglevel.com/running-times/5k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      1889,
+      1579,
+      1351,
+      1184,
+      1060
+    ],
+    "female": [
+      2127,
+      1808,
+      1567,
+      1384,
+      1247
+    ]
+  },
+  {
+    "activity": "running",
+    "distanceMeters": 10000,
+    "source": "https://runninglevel.com/running-times/10k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      3930,
+      3279,
+      2803,
+      2454,
+      2198
+    ],
+    "female": [
+      4429,
+      3760,
+      3253,
+      2871,
+      2586
+    ]
+  },
+  {
+    "activity": "running",
+    "distanceMeters": 20000,
+    "source": "https://runninglevel.com/running-times/20k-times",
+    "reference": "Age 25 reference",
+    "labels": [
+      "Beginner",
+      "Novice",
+      "Intermediate",
+      "Advanced",
+      "Elite"
+    ],
+    "male": [
+      8220,
+      6869,
+      5869,
+      5132,
+      4590
+    ],
+    "female": [
+      9246,
+      7870,
+      6814,
+      6013,
+      5412
+    ]
+  }
+]

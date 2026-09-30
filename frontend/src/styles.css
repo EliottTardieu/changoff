@@ -30,3 +30,6 @@ body:has(.progress-modal[open]){overflow:hidden}
 /* The longer brand and WOD navigation retain their own rows on narrow screens. */
 .sidebar .brand{font-size:20px;letter-spacing:-.7px}
 @media(max-width:800px){.sidebar{flex-wrap:wrap;gap:12px}.sidebar nav{width:100%;justify-content:space-between}.sidebar nav button{flex:1;justify-content:center}}
+.language-switch{display:flex;align-items:center;gap:10px;margin-left:auto;margin-right:20px}.language-switch select{margin:0;padding:7px;width:auto}.auth-language{position:absolute;right:24px;top:16px;z-index:20}.auth-language label{display:flex;gap:10px;align-items:center}.auth-language select{width:auto;margin:0;padding:6px}
+.cardio-form,.cardio-ranks{border-top:1px solid var(--border);padding-top:22px;margin-top:22px}.cardio-form h3{margin-bottom:16px}.cardio-ranks a{display:inline-block;font-size:12px;color:var(--lime);margin:12px 0}.cardio-history-title{margin:24px 0 12px}.cardio-modal td:last-child{min-width:90px}
+@media(max-width:800px){.topbar{display:flex;height:58px;padding:0 20px}.topbar>span:first-child,.topbar .top-tag{display:none}.language-switch{margin:0 0 0 auto}.auth-language{position:relative;right:auto;top:auto;display:flex;justify-content:flex-end;padding:10px 20px}}

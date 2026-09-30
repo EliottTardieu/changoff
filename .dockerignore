@@ -1,0 +1,10 @@
+.git
+.idea
+.codex
+.agents
+.env
+**/node_modules
+**/dist
+**/target
+**/.angular
+**/test-results
