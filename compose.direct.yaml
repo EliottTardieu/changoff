@@ -1,6 +1,0 @@
-# Optional single-origin deployment: Spring Boot serves both Angular and /api.
-# Only api + db are needed; bind to localhost by default.
-services:
-  api:
-    ports:
-      - "127.0.0.1:${DIRECT_PORT:-8081}:8080"

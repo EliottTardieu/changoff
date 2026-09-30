@@ -211,19 +211,17 @@ Use the **Language / Langue** selector in the top bar (also available before sig
 
 English source messages are the translation keys. The standalone `TranslatePipe` and `frontend/src/locales/fr.ts` translate the interface, exercise catalog, generated WOD instructions, errors and notifications. Angular’s `LOCALE_ID` formats dates and numbers. User-entered names, workout titles and notes remain unchanged. Language switching reloads the page, so save edits before switching.
 
-## Routing with or without a proxy
+## Routing through the bundled nginx
 
-All frontend requests use root-relative `/api/...` paths. Backend controllers, health checks and the session cookie use the same prefix. Locale prefixes never apply to API requests. The included nginx forwards `/api/...` unchanged; for another nginx proxy use `proxy_pass http://api:8080;` **without a trailing slash**, so `/api/` is not stripped. Serve the frontend and API under the same origin; no backend URL needs to be compiled into Angular.
+The frontend and backend are built and deployed separately: the `web` container builds Angular and serves it with nginx; the `api` container builds and runs only the Java REST API. Compose uses `./frontend` and `./backend` as their respective build contexts. A standalone backend image can be built with `docker build ./backend`.
 
-For a deployment **without any reverse proxy**, the backend Docker image includes the compiled Angular site and Spring Boot serves both the UI and API. Start just these services:
+All frontend requests use root-relative `/api/...` paths. The bundled nginx forwards these requests to Spring Boot unchanged and serves Angular for frontend routes such as `/fr/cardio`. Backend controllers, health checks and the session cookie use the same `/api` prefix. Locale prefixes never apply to API requests.
 
-```sh
-docker compose -f compose.yaml -f compose.direct.yaml up --build -d db api
-```
+Run `docker compose up --build -d` and open **http://localhost:8080** (or your configured `PORT`). No externally configured reverse proxy is required. Spring Boot does not serve the frontend, and its port is not published by the default Compose configuration.
 
-Open **http://localhost:8081/fr/overview** or **http://localhost:8081/en/overview**. API requests go directly to Spring Boot at `http://localhost:8081/api/...`. `DIRECT_PORT` changes this optional port; it binds to loopback by default. If the separate web container is already running, it can remain in place or be stopped with `docker compose stop web`. This uses the same database volume and requires no reset.
+If you add an external reverse proxy, it can forward the whole site to the bundled web container. If you route `/api/` separately to the backend, preserve the prefix: for nginx, use `proxy_pass http://api:8080;` **without a trailing slash** (with a backend address reachable from that proxy). Keep the frontend and API under the same browser origin.
 
-The backend Docker build context is now the repository root (`docker build -f backend/Dockerfile .`), because it builds and embeds Angular. Host-side Maven development still uses Angular’s development server and its `/api/**` proxy, or you can copy the frontend build into Spring Boot’s static resources before packaging.
+For host-side development, Angular’s development server proxies `/api/**` to Spring Boot; see the local development instructions below.
 
 ## Ranking model
 
@@ -282,7 +280,7 @@ npm run test:cardio
 npm run test:i18n
 ```
 
-Set `CHANGOFF_URL` to test another local URL. Browser tests create isolated test accounts in the running database. The progress test checks daily records, graph filters, saved rank preferences, higher-rep sets, deletion, bodyweight sets, and mobile layout. The cardio test checks French and English routes, cardio logging and ranks, profile visibility, modal graphs, WOD translations and mobile layout. Set `CHANGOFF_DIRECT_URL=http://localhost:8081` to additionally check direct Spring Boot hosting. Backend cardio tests cover exact benchmark boundaries, dataset snapshots, invalid inputs and ownership.
+Set `CHANGOFF_URL` to test another local URL. Browser tests create isolated test accounts in the running database. The progress test checks daily records, graph filters, saved rank preferences, higher-rep sets, deletion, bodyweight sets, and mobile layout. The cardio test checks French and English routes, cardio logging and ranks, profile visibility, modal graphs, WOD translations and mobile layout. Backend cardio tests cover exact benchmark boundaries, dataset snapshots, invalid inputs and ownership.
 
 ## REST API
 

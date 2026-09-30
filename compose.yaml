@@ -14,9 +14,7 @@ services:
       retries: 15
     restart: unless-stopped
   api:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: ./backend
     environment:
       DB_URL: jdbc:postgresql://db:5432/changoff
       DB_USER: changoff

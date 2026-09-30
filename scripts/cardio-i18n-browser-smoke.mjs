@@ -125,16 +125,5 @@ try {
   assert.ok(requests.length>0);
   assert.ok(requests.every(u=>new URL(u).origin===base&&new URL(u).pathname.startsWith('/api/')),'All fetches are same-origin /api paths');
   assert.deepEqual(errors,[]);
-  if(process.env.CHANGOFF_DIRECT_URL){
-    const direct=process.env.CHANGOFF_DIRECT_URL;
-    const context=await browser.newContext();const p=await context.newPage();
-    assert.equal((await p.request.get(direct+'/api/health')).status(),200);
-    assert.equal((await p.request.get(direct+'/cardio')).status(),404);
-    await p.goto(direct+'/fr/cardio');await p.getByRole('heading',{name:fr['Welcome back.']}).waitFor();
-    const r=await p.request.post(direct+'/api/auth/register',{headers,data:{name:'Direct',email:`direct-${Date.now()}@example.com`,password:'direct-test-password',bodyweight:75,standard:'male'}});
-    assert.equal(r.status(),201);await p.reload();await p.getByRole('button',{name:fr['Jump rope'],exact:true}).waitFor();
-    await p.getByLabel(fr.Language,{exact:true}).selectOption('en');await p.waitForURL(direct+'/en/cardio');
-    await p.getByRole('button',{name:'Jump rope',exact:true}).waitFor();await context.close();
-  }
-  console.log('PASS cardio and i18n: logging, ranks, unsupported distances, graph filters, deletion, profile toggle, French UI/WOD instructions, locale URLs, reload/back, mobile modals, /api paths'+(process.env.CHANGOFF_DIRECT_URL?', direct Spring Boot hosting.':'.'));
+  console.log('PASS cardio and i18n: logging, ranks, unsupported distances, graph filters, deletion, profile toggle, French UI/WOD instructions, locale URLs, reload/back, mobile modals, /api paths.');
 }finally{await browser.close();}
