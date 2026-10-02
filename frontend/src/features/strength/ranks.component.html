@@ -1,0 +1,79 @@
+<div class="page-heading"
+  ><div
+    ><div class="eyebrow">{{ 'ONE STEP STRONGER' | t }}</div
+    ><h1>{{ 'The rank ladder' | t }}<span class="accent">.</span></h1
+    ><p class="muted">{{ '24 milestones. A clear path to your next one.' | t }}</p></div
+  ><button class="primary" (click)="vm.openLog(vm.selected)">{{ '＋ Log a set' | t }}</button></div
+>
+<section class="panel ladder-controls"
+  ><label
+    >{{ 'Exercise' | t
+    }}<select [(ngModel)]="vm.selected" (ngModelChange)="vm.loadTargets()">
+      @for (s of vm.standings(); track s.exercise.id) {
+        <option [value]="s.exercise.id">{{ s.exercise.name | t }}</option>
+      }
+    </select></label
+  ><label
+    >{{ 'Reps per set' | t
+    }}<select [(ngModel)]="vm.targetReps" (ngModelChange)="vm.loadTargets()">
+      @for (r of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track r) {
+        <option [ngValue]="r">{{ '{0} reps' | t: (r | t) }}</option>
+      }
+    </select></label
+  ><div
+    ><small>{{ 'YOUR CURRENT RANK' | t }}</small
+    ><h3>{{ vm.current()?.rank | t }}</h3></div
+  ></section
+>
+<p class="fine">{{
+  '{0} Targets use your current {1} kg body weight and {2} standards. {3}'
+    | t
+      : (vm.exercise(vm.selected)?.note | t)
+      : (vm.user()!.bodyweight | t)
+      : (vm.user()!.standard | t)
+      : ((vm.exercise(vm.selected)?.bodyweightMovement
+          ? 'Weights below are ADDED load; 0 means bodyweight alone.'
+          : 'Weights below are external load.'
+        )
+          | t)
+}}</p>
+<section class="ladder-grid">
+  @for (t of vm.targets(); track t.level) {
+    <article class="ladder-card" [class.achieved]="t.level <= (vm.current()?.level || 0)"
+      ><div class="ladder-top"
+        ><span class="medal" [class]="'medal ' + vm.tier(t.level)">{{
+          ((t.level - 1) % 3) + 1 | t
+        }}</span
+        ><span class="achieved-label">{{
+          t.level <= (vm.current()?.level || 0) ? ('✓ ACHIEVED' | t) : ('LEVEL {0}' | t: t.level)
+        }}</span></div
+      ><h3>{{ t.rank | t }}</h3
+      ><strong
+        >{{ t.weight | number: '1.0-1' | t
+        }}<small>{{ 'kg × {0} reps' | t: (t.reps | t) }}</small></strong
+      ><p>{{ '{0}× body weight · e1RM' | t: (t.ratio | number: '1.2-3' | t) }}</p></article
+    >
+  }
+</section>
+<details class="panel methodology"
+  ><summary>{{ 'How ranks are calculated & sources' | t }}</summary
+  ><p>{{
+    'We estimate one-rep max with Epley: weight × (1 + reps / 30); a single rep uses its actual weight. For pull-ups and dips, weight includes your body weight. Sets of 1–12 reps qualify. This is an estimate, not a requirement to test a maximum.'
+      | t
+  }}</p
+  ><p>{{
+    'Strength Level’s beginner, novice, intermediate, advanced and elite benchmarks anchor Bronze 1, Silver 1, Platinum 1, Diamond 1 and Master 3. Other ranks interpolate linearly. Chang 3 is 115% of elite. All 24 ranks are Time to Chang’s own progression, not published percentiles.'
+      | t
+  }}</p
+  ><p>{{
+    'Pull-up and dip ratios use published weighted standards at 75 kg male / 60 kg female, scaled to your body weight. Other lifts use published bodyweight ratios. Machine setups differ; compare on the same equipment. Reference data accessed 24 September 2026.'
+      | t
+  }}</p
+  ><a [href]="vm.exercise(vm.selected)?.source" target="_blank" rel="noopener noreferrer">{{
+    'View the source for {0} ↗' | t: (vm.exercise(vm.selected)?.name | t)
+  }}</a
+  ><p>{{
+    'Ranks use your best saved score in the selected benchmark dataset. Past sets retain their original body weight and dataset. Deleting a best set may lower your rank. Equal zero-load targets can unlock together on bodyweight movements.'
+      | t
+  }}</p></details
+>

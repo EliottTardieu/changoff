@@ -1,0 +1,10 @@
+{
+  "printWidth": 100,
+  "tabWidth": 2,
+  "singleQuote": true,
+  "htmlWhitespaceSensitivity": "strict",
+  "plugins": ["./frontend/node_modules/prettier-plugin-java/dist/index.mjs"],
+  "overrides": [
+    { "files": "*.java", "options": { "tabWidth": 4 } }
+  ]
+}

@@ -1,0 +1,580 @@
+app-wod {
+  display: block;
+}
+app-wod .wod-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 25px;
+  padding-bottom: 12px;
+}
+app-wod .wod-tabs button {
+  padding: 11px 19px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted);
+  font-size: 13px;
+}
+app-wod .wod-tabs button.active {
+  color: var(--lime);
+  background: #d2f87712;
+  border-color: #d2f8773b;
+}
+app-wod .wod-pill {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--lime);
+  background: #d2f87712;
+  border: 1px solid #d2f87730;
+  border-radius: 20px;
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+app-wod .wod-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+app-wod .wod-settings > .panel {
+  margin-bottom: 18px;
+}
+app-wod .wod-settings h2,
+app-wod .wod-preview h2 {
+  font-size: 21px;
+}
+app-wod .wod-settings input[type='range'] {
+  accent-color: var(--lime);
+  padding: 0;
+  border: 0;
+}
+app-wod .wod-options {
+  border-top: 1px solid var(--border);
+  padding: 18px 0 3px;
+}
+app-wod .wod-options summary,
+app-wod .defaults summary,
+app-wod .why summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+app-wod .wod-options summary small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-top: 6px;
+}
+app-wod .wod-options h3 {
+  font-size: 12px;
+  margin: 22px 0 10px;
+}
+app-wod .check-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 17px 0;
+}
+app-wod .check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: #cbd2ca;
+  font-size: 11px;
+  line-height: 1.5;
+}
+app-wod .check input {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--lime);
+  flex-shrink: 0;
+}
+app-wod .movement-list {
+  max-height: 220px;
+  overflow: auto;
+  padding: 3px;
+}
+app-wod .secondary {
+  background: #293025;
+  border: 1px solid #49533e;
+  color: var(--text);
+  border-radius: 6px;
+  padding: 11px 15px;
+  font-size: 11px;
+}
+app-wod .defaults .secondary {
+  margin: 17px 10px 0 0;
+}
+app-wod .defaults .primary {
+  margin-top: 17px;
+}
+app-wod .restriction-row {
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+}
+app-wod .restriction-row p {
+  font-size: 10px;
+  color: var(--muted);
+  margin: 6px 0;
+}
+app-wod .restriction-row .text-button {
+  font-size: 10px;
+}
+app-wod .wod-instructions {
+  margin: 20px 0;
+  background: #d2f8770c;
+  border-left: 2px solid var(--lime);
+  border-radius: 0 7px 7px 0;
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.9;
+  color: #c9d7ba;
+}
+app-wod .prescription-item {
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  padding: 22px 0;
+}
+app-wod .station {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 6px;
+  background: #303b27;
+  color: var(--lime);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+app-wod .station-body {
+  flex: 1;
+  min-width: 0;
+}
+app-wod .station-body h3 {
+  font-size: 16px;
+}
+app-wod .muscle-tags {
+  font-size: 10px;
+  color: #a7b398;
+  line-height: 1.6;
+  margin-top: 5px;
+}
+app-wod .station-body .fine {
+  margin: 8px 0;
+}
+app-wod .station-body .form-row {
+  margin: 12px 0;
+}
+app-wod .action-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+app-wod .why {
+  border-top: 1px solid var(--border);
+  margin-top: 25px;
+  padding-top: 20px;
+}
+app-wod .why a {
+  color: var(--lime);
+}
+app-wod .generator-empty {
+  padding: 45px 25px;
+}
+app-wod .generator-empty p {
+  line-height: 1.8;
+}
+app-wod .format-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  text-align: left;
+  margin: 25px 0;
+}
+app-wod .format-grid > div {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+app-wod .format-grid strong {
+  display: block;
+  font-size: 13px;
+  color: #d3ddb9;
+}
+app-wod .format-grid small {
+  display: block;
+  font-size: 11px;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+app-wod .history-toolbar {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 24px;
+}
+app-wod .history-layout {
+  grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1.4fr);
+}
+app-wod .history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  max-height: 1150px;
+  overflow: auto;
+  padding: 1px;
+}
+app-wod .history-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: left;
+}
+app-wod .history-card.selected {
+  border-color: #8ca65b;
+  background: #242d20;
+}
+app-wod .history-card > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+app-wod .history-card h3 {
+  margin-top: 18px;
+  overflow-wrap: anywhere;
+}
+app-wod .history-card p {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 9px;
+}
+app-wod .history-card small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+app-wod .status-tag {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: #b8c0b1;
+}
+app-wod .status-tag.completed {
+  color: var(--lime);
+}
+app-wod .saved-wod h2 {
+  overflow-wrap: anywhere;
+}
+app-wod .saved-movements {
+  padding-left: 24px;
+  font-size: 13px;
+}
+app-wod .saved-movements li {
+  padding: 10px 0;
+}
+app-wod .saved-movements strong {
+  display: block;
+  font-weight: 500;
+}
+app-wod .saved-movements span {
+  display: block;
+  color: var(--lime);
+  margin-top: 6px;
+  font-size: 12px;
+}
+app-wod .saved-movements small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-top: 6px;
+}
+app-wod .result-form,
+app-wod .participants {
+  border-top: 1px solid var(--border);
+  margin-top: 25px;
+  padding-top: 25px;
+}
+app-wod .result-form > label {
+  margin-bottom: 18px;
+}
+app-wod textarea {
+  width: 100%;
+  display: block;
+  margin-top: 8px;
+  resize: vertical;
+  border: 1px solid #383f3c;
+  background: #121716;
+  color: var(--text);
+  padding: 12px;
+  border-radius: 6px;
+  font: inherit;
+  line-height: 1.7;
+}
+app-wod .participant-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+app-wod .participant-chips span {
+  background: #30372b;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 10px;
+}
+app-wod .participants .secondary {
+  margin-top: 12px;
+}
+app-wod .leave-button {
+  color: #d6a497;
+  margin-top: 25px;
+  font-size: 11px;
+}
+app-wod .leave-confirm {
+  background: #3b2726;
+  padding: 17px;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-size: 11px;
+  line-height: 1.8;
+}
+app-wod .leave-confirm button {
+  margin: 15px 12px 0 0;
+}
+app-wod .wod-stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin: 22px 0;
+}
+app-wod .wod-stat-cards small {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+app-wod .wod-stat-cards strong {
+  display: block;
+  font-size: 32px;
+  margin: 15px 0;
+}
+app-wod .wod-stat-cards em {
+  font-style: normal;
+  font-size: 14px;
+  color: var(--muted);
+}
+app-wod .wod-stat-cards p {
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+app-wod .stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+app-wod .stats-grid h2 {
+  font-size: 19px;
+}
+app-wod .weekly-chart {
+  display: flex;
+  gap: 12px;
+  margin-top: 25px;
+}
+app-wod .week-column {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+app-wod .week-column > strong {
+  display: block;
+  font-size: 12px;
+  color: var(--lime);
+  margin-bottom: 9px;
+}
+app-wod .week-track {
+  height: 145px;
+  display: flex;
+  align-items: end;
+  background: #242c23;
+  border-radius: 5px;
+  overflow: hidden;
+}
+app-wod .week-track div {
+  background: linear-gradient(#d2f877, #6b8e3e);
+  width: 100%;
+  min-height: 2px;
+}
+app-wod .week-column small {
+  display: block;
+  font-size: 8px;
+  color: var(--muted);
+  margin-top: 9px;
+  white-space: nowrap;
+}
+app-wod .muscle-bar {
+  display: grid;
+  grid-template-columns: 85px 1fr 20px;
+  gap: 12px;
+  align-items: center;
+  margin: 16px 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+app-wod .muscle-bar > div {
+  height: 6px;
+  background: #303735;
+  border-radius: 3px;
+  overflow: hidden;
+}
+app-wod .muscle-bar i {
+  height: 100%;
+  display: block;
+  background: var(--lime);
+}
+app-wod .muscle-bar strong {
+  color: var(--text);
+  font-size: 11px;
+}
+app-wod .coverage-note {
+  margin-top: 23px;
+}
+app-wod .coverage-note small {
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+app-wod .coverage-note p {
+  color: #d6e2bf;
+  font-size: 14px;
+  line-height: 1.8;
+  margin-top: 9px;
+}
+app-wod .type-stat {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0;
+  font-size: 12px;
+}
+app-wod .type-stat strong {
+  color: var(--lime);
+}
+app-wod .stats-period {
+  font-size: 12px;
+}
+app-wod .stats-grid + .notice {
+  margin-top: 20px;
+}
+@media (max-width: 1150px) {
+  app-wod .wod-layout {
+    grid-template-columns: 1fr;
+  }
+  app-wod .wod-stat-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+  app-wod .wod-preview {
+    min-width: 0;
+  }
+  app-wod .generator-empty {
+    padding: 35px;
+  }
+  app-wod .history-layout {
+    grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+  }
+  app-wod .history-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 800px) {
+  app-wod .history-layout {
+    grid-template-columns: 1fr;
+  }
+  app-wod .history-list {
+    max-height: 500px;
+  }
+  app-wod .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  app-wod .page-heading > .wod-pill {
+    display: none;
+  }
+  app-wod .weekly-chart {
+    gap: 9px;
+  }
+}
+@media (max-width: 520px) {
+  app-wod .wod-tabs {
+    gap: 2px;
+  }
+  app-wod .wod-tabs button {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+  app-wod .panel {
+    padding: 20px;
+  }
+  app-wod .check-grid {
+    gap: 12px 8px;
+  }
+  app-wod .check {
+    font-size: 10px;
+  }
+  app-wod .wod-stat-cards {
+    gap: 10px;
+  }
+  app-wod .wod-stat-cards .panel {
+    padding: 16px;
+  }
+  app-wod .wod-stat-cards small {
+    font-size: 8px;
+  }
+  app-wod .action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  app-wod .prescription .section-heading {
+    display: flex;
+  }
+  app-wod .wod-settings .form-row {
+    flex-wrap: wrap;
+  }
+  app-wod .wod-settings .form-row label {
+    min-width: 120px;
+  }
+  app-wod .result-form .form-row {
+    flex-wrap: wrap;
+  }
+  app-wod .result-form .form-row label {
+    min-width: 110px;
+  }
+  app-wod .history-toolbar {
+    gap: 12px;
+  }
+  app-wod .format-grid {
+    gap: 8px;
+  }
+  app-wod .history-card {
+    padding: 17px;
+  }
+  app-wod .station-body h3 {
+    font-size: 15px;
+  }
+}
+
+app-wod .week-column {
+  min-width: 0;
+}
+app-wod .week-column small {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

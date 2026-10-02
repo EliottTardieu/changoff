@@ -1,0 +1,51 @@
+<div class="page-heading"
+  ><div
+    ><div class="eyebrow">{{ 'VARIETY WITH A PURPOSE' | t }}</div
+    ><h1>{{ 'WOD workshop' | t }}<span class="accent">.</span></h1
+    ><p class="muted">{{ 'Build the session. Make it yours. Keep the progress.' | t }}</p></div
+  ><span class="wod-pill">{{ 'CROSSFIT-STYLE TRAINING' | t }}</span></div
+>
+<div class="wod-tabs" role="tablist" [attr.aria-label]="'WOD sections' | t">
+  @for (
+    t of [
+      ['generate', 'Generate'],
+      ['history', 'History & plans'],
+      ['statistics', 'Statistics'],
+    ];
+    track t[0]
+  ) {
+    <button
+      role="tab"
+      [id]="'tab-' + t[0]"
+      [attr.aria-controls]="'panel-' + t[0]"
+      [attr.aria-selected]="vm.tab() === t[0]"
+      [class.active]="vm.tab() === t[0]"
+      (click)="vm.changeTab(t[0])"
+      >{{ t[1] | t }}</button
+    >
+  }
+</div>
+@if (vm.error()) {
+  <div class="error" role="alert">{{ vm.error() | t }}</div>
+}
+@if (vm.notice()) {
+  <div class="notice" role="status">{{ '✓ {0}' | t: (vm.notice() | t) }}</div>
+}
+@if (vm.loading()) {
+  <section class="panel empty">{{ 'Loading your training workshop…' | t }}</section>
+} @else if (!vm.catalog()) {
+  <section class="panel empty"
+    ><p>{{ 'The workshop could not load.' | t }}</p
+    ><button class="primary" (click)="vm.initialize()">{{ 'Retry' | t }}</button></section
+  >
+} @else {
+  @if (vm.tab() === 'generate') {
+    <app-wod-generate />
+  }
+  @if (vm.tab() === 'history') {
+    <app-wod-history />
+  }
+  @if (vm.tab() === 'statistics') {
+    <app-wod-statistics />
+  }
+}

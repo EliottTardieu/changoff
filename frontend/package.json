@@ -9,7 +9,11 @@
     "test:wod": "node ../scripts/wod-browser-smoke.mjs",
     "test:progress": "node ../scripts/progress-browser-smoke.mjs",
     "test:cardio": "node ../scripts/cardio-i18n-browser-smoke.mjs",
-    "test:i18n": "node ../scripts/i18n-check.mjs"
+    "test:i18n": "node ../scripts/i18n-check.mjs",
+    "test:unit": "node ../scripts/domain.test.mjs",
+    "format": "cd .. && frontend/node_modules/.bin/prettier --write \"frontend/src/**/*.{ts,html,css}\" \"frontend/*.json\" \"backend/src/main/java/dev/**/*.java\" \"backend/src/test/**/*.java\" \"scripts/**/*.mjs\"",
+    "format:check": "cd .. && frontend/node_modules/.bin/prettier --check \"frontend/src/**/*.{ts,html,css}\" \"frontend/*.json\" \"backend/src/main/java/dev/**/*.java\" \"backend/src/test/**/*.java\" \"scripts/**/*.mjs\"",
+    "check": "npm run format:check && npm run test:unit && npm run test:i18n && npm run build"
   },
   "dependencies": {
     "@angular/common": "^21.0.0",
@@ -26,6 +30,8 @@
     "@angular/build": "^21.0.0",
     "@angular/cli": "^21.0.0",
     "playwright": "^1.63.0",
+    "prettier": "3.9.9",
+    "prettier-plugin-java": "2.11.0",
     "typescript": "~5.9.3"
   }
 }

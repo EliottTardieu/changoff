@@ -1,0 +1,152 @@
+@if (vm.progressOpen()) {
+  <dialog
+    appModal
+    class="modal progress-modal"
+    aria-labelledby="progress-heading"
+    (cancel)="$event.preventDefault(); vm.closeProgress()"
+    (click)="vm.dismissProgressBackdrop($event)"
+  >
+    <div class="modal-heading"
+      ><div
+        ><div class="eyebrow">{{ 'EXERCISE PROGRESS' | t }}</div
+        ><h2 id="progress-heading">{{ vm.exercise(vm.progressExercise())?.name | t }}</h2
+        ><p class="muted">{{ 'Your weights and reps, over time.' | t }}</p></div
+      ><button
+        class="icon-button"
+        (click)="vm.closeProgress()"
+        [attr.aria-label]="'Close progress' | t"
+        >×</button
+      ></div
+    >
+    <div class="personal-bests">
+      <div
+        ><span>{{ 'HEAVIEST SET' | t }}</span>
+        @if (vm.records()[vm.progressExercise()]?.weight; as l) {
+          <strong>{{ '{0} kg × {1} reps' | t: (l.weight | t) : (l.reps | t) }}</strong
+          ><small>{{ l.performed_on | date: 'mediumDate' | t }}</small>
+        } @else {
+          <strong>{{ 'No sets yet' | t }}</strong>
+        }
+      </div>
+      <div
+        ><span>{{ 'MOST REPS' | t }}</span>
+        @if (vm.records()[vm.progressExercise()]?.reps; as l) {
+          <strong>{{ '{0} reps at {1} kg' | t: (l.reps | t) : (l.weight | t) }}</strong
+          ><small>{{ l.performed_on | date: 'mediumDate' | t }}</small>
+        } @else {
+          <strong>{{ 'No sets yet' | t }}</strong>
+        }
+      </div>
+      @if (vm.user()!.ranks_enabled) {
+        @for (s of vm.standings(); track s.exercise.id) {
+          @if (s.exercise.id === vm.progressExercise()) {
+            <div class="progress-rank"
+              ><span>{{ 'CURRENT RANK' | t }}</span
+              ><strong [class]="'rank-text ' + vm.tier(s.level)">{{ s.rank | t }}</strong
+              ><button class="text-button" (click)="vm.viewRanks(s.exercise.id)">{{
+                'View rank ladder ↗' | t
+              }}</button></div
+            >
+          }
+        }
+      }
+    </div>
+    @for (s of vm.standings(); track s.exercise.id) {
+      @if (s.exercise.id === vm.progressExercise()) {
+        <app-progress
+          [lifts]="vm.progressLifts()"
+          [name]="s.exercise.name"
+          [addedLoad]="s.exercise.bodyweightMovement"
+        />
+      }
+    }
+    <button class="primary" (click)="vm.openLog(vm.progressExercise())">{{
+      '＋ Log this exercise' | t
+    }}</button>
+  </dialog>
+}
+@if (vm.showLog()) {
+  <div class="modal-backdrop" (click)="!vm.busy() && vm.showLog.set(false)"
+    ><section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="log-title"
+      (click)="$event.stopPropagation()"
+      (keydown)="vm.trapFocus($event)"
+      (keydown.escape)="!vm.busy() && vm.showLog.set(false)"
+      ><div class="modal-heading"
+        ><div
+          ><div class="eyebrow">{{ 'MAKE IT COUNT' | t }}</div
+          ><h2 id="log-title">{{ 'Log a set' | t }}</h2></div
+        ><button
+          class="icon-button"
+          [disabled]="vm.busy()"
+          (click)="vm.showLog.set(false)"
+          [attr.aria-label]="'Close dialog' | t"
+          >×</button
+        ></div
+      >
+      @if (vm.error()) {
+        <p class="error" role="alert">{{ vm.error() | t }}</p>
+      }
+      <form (ngSubmit)="vm.saveLift()"
+        ><label
+          >{{ 'Exercise' | t
+          }}<select appAutofocus name="exercise" [(ngModel)]="vm.logExercise">
+            @for (s of vm.standings(); track s.exercise.id) {
+              <option [value]="s.exercise.id">{{ s.exercise.name | t }}</option>
+            }
+          </select></label
+        ><p class="fine">{{ vm.exercise(vm.logExercise)?.note | t }}</p
+        ><div class="form-row"
+          ><label
+            >{{
+              (vm.exercise(vm.logExercise)?.bodyweightMovement
+                ? 'Added weight (kg)'
+                : 'Weight (kg)'
+              ) | t
+            }}<input
+              name="weight"
+              [(ngModel)]="vm.weight"
+              type="number"
+              [min]="vm.exercise(vm.logExercise)?.bodyweightMovement ? 0 : 0.1"
+              max="1500"
+              step="0.1"
+              required /></label
+          ><label
+            >{{ 'Reps' | t
+            }}<input
+              name="reps"
+              [(ngModel)]="vm.reps"
+              type="number"
+              min="1"
+              max="1000"
+              step="1"
+              required /></label></div
+        ><label
+          >{{ 'Date' | t
+          }}<input
+            name="date"
+            [(ngModel)]="vm.date"
+            type="date"
+            [max]="vm.today()"
+            required /></label
+        ><div class="log-note"
+          >{{
+            'Save the weight and reps you actually completed. Body weight: {0} kg.'
+              | t: (vm.user()!.bodyweight | t)
+          }}
+          @if (vm.user()!.ranks_enabled) {
+            {{
+              'Sets of 1–12 reps also count toward ranks; higher-rep sets are tracked without a rank estimate.'
+                | t
+            }}
+          }</div
+        ><button class="primary wide" [disabled]="vm.busy()">{{
+          (vm.busy() ? 'Saving…' : 'Save set →') | t
+        }}</button></form
+      ></section
+    ></div
+  >
+}

@@ -1,0 +1,344 @@
+<div class="page-heading"
+  ><div
+    ><div class="eyebrow">{{ 'GO THE DISTANCE' | t }}</div
+    ><h1>{{ 'Cardio' | t }}<span class="accent">.</span></h1
+    ><p class="muted">{{
+      'Track your runs, rides and jumps. Open an activity to see your progress.' | t
+    }}</p></div
+  ></div
+>
+@if (!selected() && error()) {
+  <p class="error" role="alert">{{ error() | t }}</p>
+}
+@if (!ready()) {
+  <p class="muted">{{ 'Loading your cardio history…' | t }}</p>
+} @else {
+  <section class="exercise-grid">
+    @for (a of activities; track a.id) {
+      <article class="exercise-card"
+        ><div class="card-top"
+          ><span class="muscle">{{ 'Cardio' | t }}</span
+          ><span class="exercise-symbol">↗</span></div
+        ><h3
+          ><button
+            class="exercise-open"
+            aria-haspopup="dialog"
+            [attr.aria-label]="title(a) | t"
+            (click)="open(a)"
+            >{{ title(a) | t }}</button
+          ></h3
+        ><div class="card-record"
+          ><small>{{ '{0} sessions' | t: (forActivity(a).length | t) }}</small>
+          @if (best(a); as b) {
+            <strong>{{
+              '{0} {1}'
+                | t
+                  : (b.rate | number: '1.1-1' | t)
+                  : ((a.activity === 'rope' ? 'reps/min' : 'km/h') | t)
+            }}</strong
+            ><small>{{ b.performed_on | date: 'mediumDate' | t }}</small
+            ><small>{{
+              '{0} · {1}'
+                | t
+                  : ((a.activity === 'rope'
+                      ? ('{0} reps' | t: b.reps)
+                      : b.distance_meters! / 1000 + ' km'
+                    )
+                      | t)
+                  : (time(b.duration_seconds) | t)
+            }}</small>
+          } @else {
+            <p class="muted">{{ 'No sessions yet.' | t }}</p>
+          }
+        </div>
+        @if (ranksEnabled) {
+          <p class="fine">{{
+            (a.activity === 'rope'
+              ? 'No verified ranking scale'
+              : bestRank(a) || 'No ranked session yet'
+            ) | t
+          }}</p>
+        }
+      </article>
+    }
+  </section>
+}
+@if (selected(); as a) {
+  <dialog
+    appModal
+    class="modal progress-modal cardio-modal"
+    aria-labelledby="cardio-title"
+    (cancel)="$event.preventDefault(); close()"
+    (click)="backdrop($event)"
+  >
+    <div class="modal-heading"
+      ><div
+        ><div class="eyebrow">{{ 'CARDIO PROGRESS' | t }}</div
+        ><h2 id="cardio-title">{{ title(a) | t }}</h2></div
+      ><button
+        class="icon-button"
+        (click)="close()"
+        [disabled]="busy()"
+        [attr.aria-label]="'Close cardio' | t"
+        >×</button
+      ></div
+    >
+    @if (error()) {
+      <p class="error" role="alert">{{ error() | t }}</p>
+    }
+    @if (notice()) {
+      <p class="notice" role="status">{{ notice() | t }}</p>
+    }
+    <div class="progress-controls"
+      ><label
+        >{{ 'Time range' | t
+        }}<select [ngModel]="days()" (ngModelChange)="days.set($event)"
+          ><option [ngValue]="0">{{ 'All history' | t }}</option
+          ><option [ngValue]="30">{{ 'Last 30 days' | t }}</option
+          ><option [ngValue]="90">{{ 'Last 90 days' | t }}</option></select
+        ></label
+      >
+      @if (!a.distance) {
+        <label
+          >{{
+            (a.activity === 'rope' ? 'Compare at duration (seconds)' : 'Compare at distance (km)')
+              | t
+          }}<input
+            type="number"
+            min="0.01"
+            step="0.01"
+            [placeholder]="'All sessions' | t"
+            [ngModel]="comparison()"
+            (ngModelChange)="comparison.set($event)"
+        /></label>
+      }
+    </div>
+    <p class="fine">{{
+      'Daily best speed or cadence. Higher is faster. Use equal distances or durations to compare similar sessions; these are not equivalent endurance efforts.'
+        | t
+    }}</p>
+    @if (points().length) {
+      <svg
+        class="training-chart"
+        viewBox="0 0 760 280"
+        role="img"
+        [attr.aria-label]="'Cardio progress over time' | t"
+      >
+        <text x="60" y="18">{{ (a.activity === 'rope' ? 'reps/min' : 'km/h') | t }}</text>
+        <line x1="60" x2="730" y1="230" y2="230" class="chart-grid" />
+        <polyline [attr.points]="line()" class="chart-line" />
+        @for (p of points(); track p.s.id) {
+          <circle
+            [attr.cx]="p.x"
+            [attr.cy]="p.y"
+            r="5"
+            class="chart-point"
+            tabindex="0"
+            [attr.aria-label]="p.s.performed_on + ': ' + p.s.rate | t"
+          >
+            <title>
+              {{
+                '{0} · {1} {2}'
+                  | t
+                    : (p.s.performed_on | t)
+                    : (p.s.rate | number: '1.1-1' | t)
+                    : ((a.activity === 'rope' ? 'reps/min' : 'km/h') | t)
+              }}
+            </title>
+          </circle>
+          <text [attr.x]="p.x" [attr.y]="p.y - 12" text-anchor="middle">
+            {{ p.s.rate | number: '1.1-1' | t }}
+          </text>
+        }
+        <text x="60" y="267">{{ points()[0].s.performed_on | date: 'mediumDate' | t }}</text>
+        @if (points().length > 1) {
+          <text x="730" y="267" text-anchor="end">
+            {{ points()[points().length - 1].s.performed_on | date: 'mediumDate' | t }}
+          </text>
+        }
+      </svg>
+    } @else {
+      <p class="empty">{{ 'No sessions match these filters.' | t }}</p>
+    }
+    <form class="cardio-form" (ngSubmit)="save()"
+      ><h3>{{ 'Log a cardio session' | t }}</h3
+      ><div class="form-row">
+        @if (a.activity === 'rope') {
+          <label
+            >{{ 'Reps' | t
+            }}<input
+              name="reps"
+              [(ngModel)]="reps"
+              type="number"
+              min="1"
+              max="1000000"
+              step="1"
+              required
+          /></label>
+        } @else if (a.activity === 'cycling') {
+          <label
+            >{{ 'Distance (km)' | t
+            }}<input
+              name="distance"
+              [(ngModel)]="distanceKm"
+              type="number"
+              min="0.001"
+              max="2000"
+              step="0.001"
+              required
+          /></label>
+        }
+        <label
+          >{{ 'Minutes' | t
+          }}<input
+            name="minutes"
+            [(ngModel)]="minutes"
+            type="number"
+            min="0"
+            max="10080"
+            step="1"
+            required /></label
+        ><label
+          >{{ 'Seconds' | t
+          }}<input
+            name="seconds"
+            [(ngModel)]="seconds"
+            type="number"
+            min="0"
+            max="59.99"
+            step="0.01"
+            required /></label></div
+      ><div class="form-row"
+        ><label
+          >{{ 'Date' | t
+          }}<input name="date" [(ngModel)]="date" type="date" [max]="today()" required /></label
+        ><label
+          >{{ 'Notes (optional)' | t
+          }}<input name="notes" [(ngModel)]="notes" maxlength="1000" /></label></div
+      ><p class="fine">{{
+        'Record elapsed time, including pauses. For jump rope, count one completed single-under jump as one rep.'
+          | t
+      }}</p
+      ><button class="primary" [disabled]="busy() || minutes * 60 + seconds <= 0">{{
+        'Save cardio session' | t
+      }}</button></form
+    >
+    @if (ranksEnabled) {
+      <section class="cardio-ranks"
+        ><h3>{{ 'Reference ranks' | t }}</h3>
+        @if (a.activity === 'rope') {
+          <p class="fine">{{
+            'No suitable general reps-over-time ranking scale was verified. Your sessions are tracked without invented ranks. Competition speed counts use a different protocol.'
+              | t
+          }}</p
+          ><a href="https://rules.ijru.sport/" target="_blank" rel="noopener noreferrer">{{
+            'IJRU competition rules ↗' | t
+          }}</a>
+        } @else {
+          <p class="fine">{{
+            'Published reference categories, not the strength rank ladder. Your profile dataset applies to new sessions; historical sessions keep their dataset. These fixed reference ages are not age-adjusted personal rankings.'
+              | t
+          }}</p>
+          @if (currentBenchmark(); as b) {
+            <p class="fine">{{
+              '{0} · {1} · {2} km'
+                | t: (b.reference | t) : (standard | t) : (b.distanceMeters / 1000 | t)
+            }}</p
+            ><div class="table-wrap"
+              ><table
+                ><thead
+                  ><tr
+                    ><th>{{ 'Rank' | t }}</th
+                    ><th>{{ 'Finish within' | t }}</th></tr
+                  ></thead
+                ><tbody>
+                  @for (label of b.labels; track label; let i = $index) {
+                    <tr
+                      ><td>{{ label | t }}</td
+                      ><td>{{ time(thresholds(b)[i]) | t }}</td></tr
+                    >
+                  }
+                </tbody></table
+              ></div
+            ><a [href]="b.source" target="_blank" rel="noopener noreferrer">{{
+              'Benchmark source ↗' | t
+            }}</a>
+          } @else {
+            <p class="fine">{{
+              'No verified benchmark for this distance. This session is tracked without a rank.' | t
+            }}</p>
+          }
+          @if (a.activity === 'cycling') {
+            <p class="fine">{{
+              'Cycling benchmark distances (km): {0}. No interpolation between distances. Terrain, wind, bicycle and drafting affect speed; compare similar conditions.'
+                | t: (cyclingDistances() | t)
+            }}</p>
+          }
+        }
+      </section>
+    }
+    <h3 class="cardio-history-title">{{ 'Session history' | t }}</h3
+    ><div class="table-wrap"
+      ><table
+        ><thead
+          ><tr
+            ><th>{{ 'Date' | t }}</th
+            ><th>{{ (a.activity === 'rope' ? 'Reps' : 'Distance') | t }}</th
+            ><th>{{ 'Time' | t }}</th
+            ><th>{{ (a.activity === 'rope' ? 'Cadence' : 'Speed') | t }}</th>
+            @if (ranksEnabled) {
+              <th>{{ 'Rank' | t }}</th>
+            }
+            <th>{{ 'Notes' | t }}</th
+            ><th></th></tr></thead
+        ><tbody>
+          @for (s of history(); track s.id) {
+            <tr
+              ><td>{{ s.performed_on | date: 'mediumDate' | t }}</td
+              ><td>{{
+                (a.activity === 'rope' ? s.reps : s.distance_meters! / 1000 + ' km') | t
+              }}</td
+              ><td>{{ time(s.duration_seconds) | t }}</td
+              ><td>{{
+                '{0} {1}'
+                  | t
+                    : (s.rate | number: '1.1-1' | t)
+                    : ((a.activity === 'rope' ? 'reps/min' : 'km/h') | t)
+              }}</td>
+              @if (ranksEnabled) {
+                <td
+                  >{{ s.rank || 'No verified benchmark' | t
+                  }}<small>{{
+                    '{0} · {1}' | t: (s.standard | t) : (s.reference || 'Tracking only' | t)
+                  }}</small></td
+                >
+              }
+              <td>{{ s.notes }}</td
+              ><td>
+                @if (deleteId() === s.id) {
+                  <button class="danger" (click)="remove(s.id)" [disabled]="busy()">{{
+                    'Confirm delete' | t
+                  }}</button
+                  ><button class="text-button" (click)="deleteId.set('')">{{
+                    'Cancel' | t
+                  }}</button>
+                } @else {
+                  <button
+                    class="icon-button"
+                    [attr.aria-label]="'Delete cardio session' | t"
+                    (click)="deleteId.set(s.id)"
+                    >×</button
+                  >
+                }
+              </td></tr
+            >
+          } @empty {
+            <tr
+              ><td colspan="7">{{ 'No sessions yet.' | t }}</td></tr
+            >
+          }
+        </tbody></table
+      ></div
+    >
+  </dialog>
+}

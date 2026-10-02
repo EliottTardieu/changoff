@@ -209,7 +209,7 @@ The **Cardio** sidebar page tracks jump rope, running (400 m, 1 km, 5 km, 10 km 
 
 Use the **Language / Langue** selector in the top bar (also available before sign-in). URLs include `/en/` or `/fr/`, for example `/fr/cardio` or `/en/wods/history`. Switching language keeps the current page, WOD tab, query string and fragment; direct links and refreshes work. The locale is carried by the URL, not by account settings or browser storage.
 
-English source messages are the translation keys. The standalone `TranslatePipe` and `frontend/src/locales/fr.ts` translate the interface, exercise catalog, generated WOD instructions, errors and notifications. Angular’s `LOCALE_ID` formats dates and numbers. User-entered names, workout titles and notes remain unchanged. Language switching reloads the page, so save edits before switching.
+English source messages are the translation keys. The standalone `TranslatePipe` and `frontend/src/core/i18n/locales/fr.ts` translate the interface, exercise catalog, generated WOD instructions, errors and notifications. Angular’s `LOCALE_ID` formats dates and numbers. User-entered names, workout titles and notes remain unchanged. Language switching reloads the page, so save edits before switching.
 
 ## Routing through the bundled nginx
 
@@ -228,6 +228,8 @@ For host-side development, Angular’s development server proxies `/api/**` to S
 See [docs/ranking.md](docs/ranking.md) for the researched data, exact conventions, formulas and rank mapping. The underlying benchmarks are sourced; the 24-rank game progression is our own interpolation. These are reference estimates, not universal strength percentiles or a prescription to attempt a maximum lift.
 
 ## Local development
+
+See [Editing Time to Chang](docs/development.md) for the feature map, frontend and backend responsibilities, common edits, and the verification workflow.
 
 Use Node 22.22+ (or Node 24), Java 21 and Maven 3.9+. Container builds supply these tools automatically.
 
@@ -256,10 +258,12 @@ cd backend
 mvn verify
 cd ../frontend
 npm ci
-npm run build
+npm run check
 ```
 
 Backend tests cover rank anchors, boundary conditions, monotonicity, all displayed targets, bodyweight scoring, authentication, request protection, per-user isolation, historical bodyweight preservation, deletion and logout. Tests use H2 in PostgreSQL compatibility mode; the actual stack uses PostgreSQL.
+
+`npm run check` verifies formatting, pure graph/date calculations, translation coverage and the production build. Use `npm run format` to format application code. Backend tests also check registration rollback when session creation fails; WOD tests cover restrictions, ownership, sharing, revisions and snapshots.
 
 Against a running Compose stack, run the integration smoke test (creates two uniquely named test accounts and a set, then deletes the set):
 

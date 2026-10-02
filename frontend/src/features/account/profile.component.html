@@ -1,0 +1,48 @@
+<div class="page-heading"
+  ><div
+    ><div class="eyebrow">{{ 'YOUR STARTING POINT' | t }}</div
+    ><h1>{{ 'Make it yours' | t }}<span class="accent">.</span></h1
+    ><p class="muted">{{ 'The context behind your progress.' | t }}</p></div
+  ></div
+><form class="panel profile-form" (ngSubmit)="saveProfile()"
+  ><label
+    >{{ 'Name' | t
+    }}<input name="profileName" [(ngModel)]="profileName" maxlength="60" required /></label
+  ><label>{{ 'Email' | t }}<input [value]="user()!.email" disabled /></label
+  ><label class="rank-setting"
+    ><input name="profileRanks" [(ngModel)]="profileRanks" type="checkbox" /><span
+      >{{ 'Enable ranks' | t
+      }}<small>{{
+        'Show ranks alongside your progress. Turning this off keeps all your sets, graphs and personal bests.'
+          | t
+      }}</small></span
+    ></label
+  ><div class="form-row"
+    ><label
+      >{{ 'Body weight (kg)' | t
+      }}<input
+        name="profileWeight"
+        [(ngModel)]="profileWeight"
+        type="number"
+        min="30"
+        max="300"
+        step="0.1"
+        required /></label
+    ><label
+      >{{ 'Benchmark dataset' | t
+      }}<select name="profileStandard" [(ngModel)]="profileStandard"
+        ><option value="male">{{ 'Male standards' | t }}</option
+        ><option value="female">{{ 'Female standards' | t }}</option></select
+      ></label
+    ></div
+  ><p class="fine">{{
+    'New sets use these settings. Historical sets keep their original values. When enabled, ranks use your chosen dataset. Progress graphs always include all your saved sets.'
+      | t
+  }}</p
+  ><button class="primary" [disabled]="busy()">{{
+    (busy() ? 'Saving…' : 'Save changes') | t
+  }}</button
+  ><button type="button" class="text-button profile-signout" (click)="logout()">{{
+    'Sign out of account' | t
+  }}</button></form
+>

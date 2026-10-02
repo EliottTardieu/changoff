@@ -1,0 +1,84 @@
+<section role="tabpanel" id="panel-statistics" aria-labelledby="tab-statistics">
+  @if (vm.statistics(); as s) {
+    <p class="muted stats-period">{{
+      'Your completed WODs · {0}–{1}. Planned and skipped sessions don’t count as training.'
+        | t: (s.windowStart | date: 'mediumDate' | t) : (s.windowEnd | date: 'mediumDate' | t)
+    }}</p
+    ><div class="wod-stat-cards"
+      ><article class="panel"
+        ><small>{{ 'COMPLETED WODS' | t }}</small
+        ><strong>{{ s.completed | t }}</strong
+        ><p>{{ '{0} distinct training days' | t: (s.trainingDays | t) }}</p></article
+      ><article class="panel"
+        ><small>{{ 'LOGGED MINUTES' | t }}</small
+        ><strong>{{ s.loggedMinutes | t }}</strong
+        ><p>{{ 'From results with duration entered' | t }}</p></article
+      ><article class="panel"
+        ><small>{{ 'AVERAGE EFFORT' | t }}</small
+        ><strong>{{ (s.averageEffort === null ? '—' : s.averageEffort) | t }}<em> / 10</em></strong
+        ><p>{{ 'From your recorded effort ratings' | t }}</p></article
+      ><article class="panel"
+        ><small>{{ 'UPCOMING WODS' | t }}</small
+        ><strong>{{ s.upcoming | t }}</strong
+        ><p>{{ '{0} unique movements completed' | t: (s.uniqueMovements | t) }}</p></article
+      ></div
+    >
+    <div class="stats-grid"
+      ><section class="panel"
+        ><h2>{{ 'WODs per week' | t }}</h2
+        ><p class="fine">{{ 'Eight calendar weeks · Monday–Sunday' | t }}</p
+        ><div class="weekly-chart" role="img" [attr.aria-label]="'Completed WODs by week' | t">
+          @for (w of s.weekly; track w.week) {
+            <div class="week-column"
+              ><strong>{{ w.count | t }}</strong
+              ><div class="week-track"
+                ><div [style.height.%]="(100 * w.count) / vm.maxWeek()"></div></div
+              ><small>{{ w.week | date: ('MMM d' | t) | t }}</small></div
+            >
+          }
+        </div></section
+      ><section class="panel"
+        ><h2>{{ 'Muscle coverage' | t }}</h2
+        ><p class="fine">{{
+          'Completed WODs involving each muscle, counted once per WOD. This measures exposure, not muscle growth or workload.'
+            | t
+        }}</p>
+        @for (m of vm.muscleRows(); track m[0]) {
+          <div class="muscle-bar"
+            ><span>{{ vm.label(vm.catalog()!.muscles, m[0]) | t }}</span
+            ><div><i [style.width.%]="(100 * m[1]) / vm.maxMuscles()"></i></div
+            ><strong>{{ m[1] | t }}</strong></div
+          >
+        }</section
+      ><section class="panel"
+        ><h2>{{ 'Your training balance' | t }}</h2
+        ><div class="coverage-note"
+          ><small>{{ 'MOST HIT' | t }}</small
+          ><p>{{ vm.names(s.mostHit) | t }}</p></div
+        ><div class="coverage-note"
+          ><small>{{ 'LEAST HIT' | t }}</small
+          ><p>{{ vm.names(s.leastHit) | t }}</p></div
+        ><p class="fine">{{
+          'The generator favors less-used areas when your equipment and restrictions allow it. It never overrides a ban to balance coverage.'
+            | t
+        }}</p></section
+      ><section class="panel"
+        ><h2>{{ 'Workout variety' | t }}</h2>
+        @for (t of vm.typeRows(); track t[0]) {
+          <div class="type-stat"
+            ><span>{{ vm.typeName(t[0]) | t }}</span
+            ><strong>{{ t[1] | t }}</strong></div
+          >
+        }
+        <p class="fine">{{
+          'Choose “Surprise me” to favor formats you haven’t saved recently.' | t
+        }}</p></section
+      ></div
+    >
+    @if (!s.completed) {
+      <div class="notice">{{
+        'Your statistics will fill in when you mark a WOD completed in History & plans.' | t
+      }}</div>
+    }
+  }
+</section>

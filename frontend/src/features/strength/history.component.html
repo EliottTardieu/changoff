@@ -1,0 +1,86 @@
+<div class="page-heading"
+  ><div
+    ><div class="eyebrow">{{ 'THE WORK BEHIND THE PROGRESS' | t }}</div
+    ><h1>{{ 'Your training log' | t }}<span class="accent">.</span></h1
+    ><p class="muted">{{ 'Every session leaves a mark.' | t }}</p></div
+  ><button class="primary" (click)="vm.openLog()">{{ '＋ Log a set' | t }}</button></div
+>
+<label class="history-filter"
+  >{{ 'Filter exercise' | t
+  }}<select [ngModel]="vm.historyExercise()" (ngModelChange)="vm.historyExercise.set($event)"
+    ><option value="">{{ 'All exercises' | t }}</option>
+    @for (s of vm.standings(); track s.exercise.id) {
+      <option [value]="s.exercise.id">{{ s.exercise.name | t }}</option>
+    }
+  </select></label
+>
+@if (vm.historyLifts().length) {
+  <div class="panel table-wrap"
+    ><table
+      ><thead
+        ><tr
+          ><th>{{ 'Exercise' | t }}</th
+          ><th>{{ 'Date' | t }}</th
+          ><th>{{ 'Set' | t }}</th
+          ><th>{{ 'Estimated 1RM' | t }}</th
+          ><th>{{ 'Reference' | t }}</th
+          ><th></th></tr></thead
+      ><tbody>
+        @for (l of vm.historyLifts(); track l.id) {
+          <tr
+            ><td
+              ><strong>{{ vm.exercise(l.exercise)?.name | t }}</strong>
+              @if (vm.exercise(l.exercise)?.bodyweightMovement) {
+                <small>{{ 'Added load' | t }}</small>
+              }</td
+            ><td>{{ l.performed_on | date: 'mediumDate' | t }}</td
+            ><td>{{ '{0} kg × {1}' | t: (l.weight | t) : (l.reps | t) }}</td
+            ><td>
+              @if (l.reps <= 12) {
+                {{ '{0} kg' | t: (l.score * l.bodyweight | number: '1.1-1' | t)
+                }}<small>{{
+                  (vm.exercise(l.exercise)?.bodyweightMovement
+                    ? 'Includes body weight'
+                    : 'External load'
+                  ) | t
+                }}</small>
+              } @else {
+                <span>—</span><small>{{ 'Not estimated above 12 reps' | t }}</small>
+              }</td
+            ><td
+              >{{ '{0} kg' | t: (l.bodyweight | t)
+              }}<small>{{ '{0} standards' | t: (l.standard | t) }}</small></td
+            ><td>
+              @if (vm.deleteId() === l.id) {
+                <button class="danger" [disabled]="vm.busy()" (click)="vm.removeLift(l.id)">{{
+                  'Confirm delete' | t
+                }}</button
+                ><button class="text-button" (click)="vm.deleteId.set('')">{{
+                  'Cancel' | t
+                }}</button>
+              } @else {
+                <button
+                  class="icon-button"
+                  (click)="vm.deleteId.set(l.id)"
+                  [attr.aria-label]="'Delete {0} set' | t: (vm.exercise(l.exercise)?.name | t)"
+                  >×</button
+                >
+              }
+            </td></tr
+          >
+        }
+      </tbody></table
+    ></div
+  >
+} @else {
+  <section class="empty panel"
+    ><span class="empty-icon">▤</span
+    ><h2>{{
+      (vm.historyExercise() ? 'No sets for this exercise yet.' : 'Your first entry is waiting.') | t
+    }}</h2
+    ><p>{{ 'Log your weights and reps to build your training history.' | t }}</p
+    ><button class="primary" (click)="vm.openLog()">{{
+      'Log your first set →' | t
+    }}</button></section
+  >
+}

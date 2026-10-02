@@ -1,0 +1,99 @@
+<div class="page-heading"
+  ><div
+    ><div class="eyebrow">{{ 'YOUR PROGRESS, AT A GLANCE' | t }}</div
+    ><h1
+      >{{ 'Keep showing up, {0}' | t: vm.user()!.name.split(' ')[0]
+      }}<span class="accent">.</span></h1
+    ><p class="muted">{{ 'Every set is a step forward. Make the next one count.' | t }}</p></div
+  ><button class="primary" (click)="vm.openLog()">{{ '＋ Log a set' | t }}</button></div
+>
+<section class="stats"
+  ><div
+    ><span class="stat-label">{{ 'EXERCISES TRACKED' | t }} <span>↗</span></span
+    ><strong
+      >{{ vm.tracked() | t }}<small>{{ '/ {0}' | t: (vm.standings().length | t) }}</small></strong
+    ><p>{{ 'Your training, across the board' | t }}</p></div
+  ><div
+    ><span class="stat-label">{{ 'SETS THIS WEEK' | t }} <span>↗</span></span
+    ><strong
+      >{{ vm.weekly() | t }}<small>{{ 'sets' | t }}</small></strong
+    ><p>{{ 'In the last seven days' | t }}</p></div
+  ><div
+    ><span class="stat-label">{{ 'TOTAL SETS' | t }} <span>▤</span></span
+    ><strong>{{ vm.lifts().length | t }}</strong
+    ><p>{{ 'Your complete strength history' | t }}</p></div
+  ></section
+>
+
+<div class="section-heading"
+  ><div
+    ><h2>{{ 'Your exercises' | t }} <span class="count">12</span></h2
+    ><p class="muted">{{ 'A different challenge. The same commitment.' | t }}</p></div
+  ><label class="search"
+    ><span>⌕</span
+    ><input
+      [attr.aria-label]="'Search exercises' | t"
+      [placeholder]="'Search exercises…' | t"
+      [ngModel]="vm.search()"
+      (ngModelChange)="vm.search.set($event)" /></label
+></div>
+<div class="filters">
+  @for (g of vm.groups; track g) {
+    <button [class.active]="vm.group() === g" (click)="vm.group.set(g)">{{ g | t }}</button>
+  }
+</div>
+<section class="exercise-grid">
+  @for (s of vm.filtered(); track s.exercise.id) {
+    <article class="exercise-card"
+      ><div class="card-top"
+        ><span class="muscle">{{ s.exercise.group | t }}</span
+        ><span class="exercise-symbol">↗</span></div
+      ><h3
+        ><button
+          class="exercise-open"
+          aria-haspopup="dialog"
+          [attr.aria-label]="'{0} progress' | t: (s.exercise.name | t)"
+          (click)="vm.showProgress(s.exercise.id)"
+          >{{ s.exercise.name | t }}</button
+        ></h3
+      >
+      <div class="card-record">
+        @if (vm.records()[s.exercise.id]?.weight; as l) {
+          <small>{{
+            'Heaviest set{0}' | t: ((s.exercise.bodyweightMovement ? ' · added load' : '') | t)
+          }}</small
+          ><strong>{{ '{0} kg × {1} reps' | t: (l.weight | t) : (l.reps | t) }}</strong
+          ><small>{{ l.performed_on | date: 'mediumDate' | t }}</small>
+        } @else {
+          <p class="muted">{{ 'No sets yet. Start your history.' | t }}</p>
+        }
+        @if (vm.records()[s.exercise.id]?.reps; as l) {
+          <small>{{ 'Most reps: {0} at {1} kg' | t: (l.reps | t) : (l.weight | t) }}</small>
+        }
+      </div>
+      @if (vm.user()!.ranks_enabled) {
+        <div class="rank-row"
+          ><span [class]="'medal ' + vm.tier(s.level)">{{
+            (s.level ? ((s.level - 1) % 3) + 1 : '–') | t
+          }}</span
+          ><div
+            ><strong [class]="'rank-text ' + vm.tier(s.level)">{{ s.rank | t }}</strong
+            ><small>{{
+              '{0} · {1}%' | t: (s.nextRank | t) : (s.progress | number: '1.0-0' | t)
+            }}</small></div
+          ></div
+        ><div class="progress-track"><div [style.width.%]="s.progress"></div></div>
+      }
+      <div class="card-actions"
+        ><button (click)="vm.openLog(s.exercise.id)">{{ '＋ Log set' | t }}</button></div
+      ></article
+    >
+  } @empty {
+    <div class="empty"
+      >{{ 'No exercises match your search.' | t
+      }}<button class="text-button" (click)="vm.search.set(''); vm.group.set('All')">{{
+        'Clear filters' | t
+      }}</button></div
+    >
+  }
+</section>

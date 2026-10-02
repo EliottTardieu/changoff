@@ -1,0 +1,7 @@
+**/node_modules/**
+**/dist/**
+**/target/**
+**/.angular/**
+# Applied migrations must retain their Flyway checksums.
+backend/src/main/resources/db/migration/**
+backend/src/main/java/db/migration/**

@@ -1,0 +1,261 @@
+<section role="tabpanel" id="panel-history" aria-labelledby="tab-history"
+  ><div class="history-toolbar"
+    ><label
+      >{{ 'Show' | t
+      }}<select [ngModel]="vm.historyFilter()" (ngModelChange)="vm.historyFilter.set($event)"
+        ><option value="all">{{ 'All WODs' | t }}</option
+        ><option value="upcoming">{{ 'Upcoming' | t }}</option
+        ><option value="planned">{{ 'Planned (including overdue)' | t }}</option
+        ><option value="completed">{{ 'Completed' | t }}</option
+        ><option value="skipped">{{ 'Skipped' | t }}</option></select
+      ></label
+    ><label
+      >{{ 'Search' | t
+      }}<input
+        [placeholder]="'WOD name…' | t"
+        [ngModel]="vm.historyQuery()"
+        (ngModelChange)="vm.historyQuery.set($event)" /></label
+    ><label
+      >{{ 'From' | t
+      }}<input
+        type="date"
+        [ngModel]="vm.historyFrom()"
+        (ngModelChange)="vm.historyFrom.set($event)" /></label
+    ><label
+      >{{ 'Through' | t
+      }}<input
+        type="date"
+        [ngModel]="vm.historyTo()"
+        (ngModelChange)="vm.historyTo.set($event)" /></label
+  ></div>
+  <div class="wod-layout history-layout"
+    ><section class="history-list" [attr.aria-label]="'Your WODs' | t">
+      @for (w of vm.filtered(); track w.id) {
+        <button
+          class="history-card"
+          [class.selected]="vm.detail()?.id === w.id"
+          (click)="vm.open(w.id)"
+          [disabled]="vm.busy()"
+          ><div
+            ><span class="wod-pill">{{ vm.typeName(w.type_id) | t }}</span
+            ><span class="status-tag" [class.completed]="w.status === 'completed'">{{
+              w.status | t
+            }}</span></div
+          ><h3>{{ w.title }}</h3
+          ><p>{{
+            '{0} · {1} min' | t: (w.scheduled_on | date: 'fullDate' | t) : (w.duration_minutes | t)
+          }}</p
+          ><small>{{
+            '{0} / 10 difficulty · {1}'
+              | t
+                : (w.assessed_difficulty | t)
+                : ((w.owner_id === vm.userId ? 'Organized by you' : 'Shared with you') | t)
+          }}</small></button
+        >
+      } @empty {
+        <div class="panel empty"
+          ><h2>{{ 'No WODs here yet.' | t }}</h2
+          ><p>{{ 'Generate your first session or change the filters.' | t }}</p
+          ><button class="primary" (click)="vm.changeTab('generate')">{{
+            'Build a WOD' | t
+          }}</button></div
+        >
+      }
+    </section>
+    @if (vm.detail(); as w) {
+      <section class="panel saved-wod"
+        ><div class="section-heading"
+          ><div
+            ><div class="eyebrow">{{ (w.isOwner ? 'YOUR WOD' : 'SHARED WOD') | t }}</div
+            ><h2>{{ w.title }}</h2></div
+          ><button
+            class="icon-button"
+            [attr.aria-label]="'Close WOD details' | t"
+            (click)="vm.detail.set(null)"
+            >×</button
+          ></div
+        ><p class="muted">{{
+          '{0} · {1} min · {2} / 10'
+            | t
+              : (vm.typeName(w.type_id) | t)
+              : (w.duration_minutes | t)
+              : (w.assessed_difficulty | t)
+        }}</p
+        ><div class="wod-instructions">{{ w.instructions | t }}</div
+        ><ol class="saved-movements">
+          @for (i of w.items; track i.exercise.id) {
+            <li
+              ><strong>{{ i.exercise.name | t }}</strong
+              ><span>{{
+                '{0} {1}{2}'
+                  | t
+                    : (i.quantity | t)
+                    : (i.exercise.unit | t)
+                    : ((i.weight ? ' · ' + i.weight + ' kg' : '') | t)
+              }}</span
+              ><small>{{ i.exercise.note | t }}</small></li
+            >
+          }
+        </ol>
+        <div class="action-row">
+          @if (w.canEdit) {
+            <button class="secondary" (click)="vm.useWorkout(true)" [disabled]="vm.busy()">{{
+              'Edit planned workout' | t
+            }}</button>
+          }
+          <button class="text-button" (click)="vm.useWorkout(false)" [disabled]="vm.busy()">{{
+            'Repeat / scale as new →' | t
+          }}</button></div
+        >
+        <form class="result-form" (ngSubmit)="vm.saveResult()"
+          ><h3>{{ 'Your schedule & result' | t }}</h3
+          ><p class="fine">{{
+            'Your completion, score and notes are private. Other participants record their own results.'
+              | t
+          }}</p
+          ><div class="form-row"
+            ><label
+              >{{ 'Scheduled date' | t
+              }}<input
+                name="resultScheduled"
+                type="date"
+                required
+                [(ngModel)]="vm.result.scheduledOn" /></label
+            ><label
+              >{{ 'Status' | t
+              }}<select name="status" [(ngModel)]="vm.result.status"
+                ><option value="planned">{{ 'Planned' | t }}</option
+                ><option value="completed">{{ 'Completed' | t }}</option
+                ><option value="skipped">{{ 'Skipped' | t }}</option></select
+              ></label
+            ></div
+          >
+          @if (vm.result.status === 'completed') {
+            <div class="form-row"
+              ><label
+                >{{ 'Completed on' | t
+                }}<input
+                  name="completedOn"
+                  type="date"
+                  [max]="vm.today()"
+                  required
+                  [(ngModel)]="vm.result.completedOn" /></label
+              ><label
+                >{{ 'Time / duration (seconds)' | t
+                }}<input
+                  name="time"
+                  type="number"
+                  min="1"
+                  max="86400"
+                  step="1"
+                  [(ngModel)]="vm.result.durationSeconds" /></label></div
+            ><div class="form-row"
+              ><label
+                >{{ 'Full rounds / cycles' | t
+                }}<input
+                  name="roundsCompleted"
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="1"
+                  [(ngModel)]="vm.result.roundsCompleted" /></label
+              ><label
+                >{{ 'Extra reps' | t
+                }}<input
+                  name="extraReps"
+                  type="number"
+                  min="0"
+                  max="10000"
+                  step="1"
+                  [(ngModel)]="vm.result.extraReps" /></label
+              ><label
+                >{{ 'Perceived effort (1–10)' | t
+                }}<input
+                  name="effort"
+                  type="number"
+                  min="1"
+                  max="10"
+                  step="1"
+                  [(ngModel)]="vm.result.effort" /></label></div
+            ><p class="fine">{{
+              'For EMOM, rounds means completed cycles of all stations. Use notes for incomplete stations or work left at the cap.'
+                | t
+            }}</p>
+          }
+          <label
+            >{{ 'Personal notes' | t
+            }}<textarea
+              name="notes"
+              [(ngModel)]="vm.result.notes"
+              maxlength="2000"
+              rows="3"
+              [placeholder]="'How did it feel? What would you scale next time?' | t"
+            ></textarea></label
+          ><button class="primary" [disabled]="vm.busy()">{{
+            'Save my result & schedule' | t
+          }}</button></form
+        >
+        <section class="participants"
+          ><h3
+            >{{ 'Train together' | t }}
+            <span class="count">{{ w.participants.length | t }}</span></h3
+          ><div class="participant-chips">
+            @for (p of w.participants; track p.id) {
+              <span>{{
+                '{0}{1}{2}'
+                  | t
+                    : p.name
+                    : ((p.id === vm.userId ? ' (you)' : '') | t)
+                    : ((p.id === w.owner_id ? ' · organizer' : '') | t)
+              }}</span>
+            }
+          </div>
+          @if (w.isOwner) {
+            <form (ngSubmit)="vm.share()"
+              ><label
+                >{{ 'Add an existing user by email' | t
+                }}<input
+                  name="participantEmail"
+                  type="email"
+                  maxlength="254"
+                  required
+                  [(ngModel)]="vm.participantEmail"
+                  [placeholder]="'training-partner@example.com' | t" /></label
+              ><button class="secondary" [disabled]="vm.busy()">{{
+                'Add participant' | t
+              }}</button></form
+            ><p class="fine">{{
+              'Adds this WOD to their history as planned. Their saved bans and equipment must be compatible; their difficulty may need scaling separately.'
+                | t
+            }}</p>
+          }
+        </section>
+        @if (vm.confirmLeave) {
+          <div class="leave-confirm"
+            ><p>{{
+              'Remove this WOD and your result from your history? Others keep their records. If you organize it, ownership transfers to another participant; the last participant removes the WOD.'
+                | t
+            }}</p
+            ><button class="danger" [disabled]="vm.busy()" (click)="vm.leave()">{{
+              'Confirm removal' | t
+            }}</button
+            ><button class="text-button" (click)="vm.confirmLeave = false">{{
+              'Cancel' | t
+            }}</button></div
+          >
+        } @else {
+          <button class="text-button leave-button" (click)="vm.confirmLeave = true">{{
+            'Remove myself from this WOD' | t
+          }}</button>
+        }
+      </section>
+    } @else {
+      <section class="panel empty"
+        ><div class="empty-icon">▤</div><h2>{{ 'The story of your sessions.' | t }}</h2
+        ><p>{{
+          'Select a WOD to see movements, plan a date, or record your result.' | t
+        }}</p></section
+      >
+    }
+  </div></section
+>

@@ -1,0 +1,124 @@
+@if (!ready()) {
+  <div class="loading"
+    ><span class="brand-mark">↗</span><p>{{ 'Getting your training space ready…' | t }}</p></div
+  >
+} @else if (!user()) {
+  <app-auth (authenticated)="authenticated()" />
+} @else {
+  <aside class="sidebar"
+    ><a class="brand" [href]="'/' + language + '/overview'">
+      <span class="brand-mark">↗</span> Time to Chang<span class="brand-dot">.</span></a
+    ><div class="nav-label">{{ 'YOUR WORKSPACE' | t }}</div
+    ><nav [attr.aria-label]="'Main navigation' | t"
+      ><button [class.active]="page() === 'overview'" (click)="navigate('overview')"
+        ><span>▦</span> {{ 'Overview' | t }}</button
+      ><button [class.active]="page() === 'history'" (click)="navigate('history')"
+        ><span>▤</span> {{ 'Training log' | t }}</button
+      >
+      @if (user()!.ranks_enabled) {
+        <button [class.active]="page() === 'ranks'" (click)="navigate('ranks')"
+          ><span>◇</span> {{ 'Rank ladder' | t }}</button
+        >
+      }
+      <button [class.active]="page() === 'cardio'" (click)="navigate('cardio')"
+        ><span>♡</span> {{ 'Cardio' | t }}</button
+      ><button [class.active]="page() === 'wods'" (click)="navigate('wods')"
+        ><span>✦</span> {{ 'WOD workshop' | t }}</button
+      ><button [class.active]="page() === 'profile'" (click)="navigate('profile')"
+        ><span>◎</span> {{ 'My profile' | t }}</button
+      ></nav
+    ><div class="sidebar-bottom"
+      ><div class="small-callout"
+        ><span>↗</span><strong>{{ 'Built one rep at a time.' | t }}</strong
+        ><p>{{ 'Small steps. Lasting progress.' | t }}</p></div
+      ><div class="user-row"
+        ><div class="avatar">{{ user()!.name.charAt(0).toUpperCase() }}</div
+        ><div
+          ><strong>{{ user()!.name }}</strong
+          ><small>{{
+            '{0} kg · {1} standards' | t: (user()!.bodyweight | t) : (user()!.standard | t)
+          }}</small></div
+        ><button
+          class="icon-button"
+          (click)="logout()"
+          [attr.aria-label]="'Sign out' | t"
+          [title]="'Sign out' | t"
+          >↪</button
+        ></div
+      ></div
+    ></aside
+  >
+  <div class="workspace"
+    ><header class="topbar"
+      ><span
+        >{{ 'Workspace' | t }} <span class="slash">/</span>
+        <strong>{{
+          (page() === 'overview'
+            ? 'Overview'
+            : page() === 'history'
+              ? 'Training log'
+              : page() === 'ranks'
+                ? 'Rank ladder'
+                : page() === 'wods'
+                  ? 'WOD workshop'
+                  : page() === 'cardio'
+                    ? 'Cardio'
+                    : 'My profile'
+          ) | t
+        }}</strong></span
+      ><label class="language-switch"
+        >{{ 'Language' | t
+        }}<select
+          [attr.aria-label]="'Language' | t"
+          [ngModel]="language"
+          (ngModelChange)="switchLanguage($event)"
+          ><option value="en">{{ 'English' | t }}</option
+          ><option value="fr">{{ 'Français' | t }}</option></select
+        ></label
+      ><span class="top-tag"><i></i> {{ 'THE LONG GAME' | t }}</span></header
+    >
+    <main class="content">
+      @if (error() && !strength.showLog()) {
+        <div class="error" role="alert">{{ error() | t }}</div>
+      }
+      @if (notice()) {
+        <div class="notice" role="status"
+          >{{ '✓ {0}' | t: (notice() | t)
+          }}<button
+            class="icon-button"
+            (click)="notice.set('')"
+            [attr.aria-label]="'Dismiss notification' | t"
+            >×</button
+          ></div
+        >
+      }
+      @if (page() === 'overview') {
+        <app-strength-overview />
+      }
+      @if (page() === 'ranks' && user()!.ranks_enabled) {
+        <app-strength-ranks />
+      }
+      @if (page() === 'history') {
+        <app-strength-history />
+      }
+      @if (page() === 'profile') {
+        <app-profile />
+      }
+      @if (page() === 'cardio') {
+        <app-cardio
+          [ranksEnabled]="user()!.ranks_enabled"
+          [standard]="user()!.standard"
+          (sessionExpired)="user.set(null)"
+        />
+      }
+      @if (page() === 'wods') {
+        <app-wod [userId]="user()!.id" (sessionExpired)="user.set(null)" />
+      }
+      <footer
+        >{{ 'BUILT ONE REP AT A TIME.' | t
+        }}<span>{{ 'Time to Chang · Personal strength tracking' | t }}</span></footer
+      >
+    </main></div
+  >
+  <app-strength-dialogs />
+}
